@@ -1,0 +1,46 @@
+
+        <div class="master-container">
+            <span id="mensaje" class="error-message">
+                <i>Cerrar</i>
+            </span>
+            <div class="cas-panel-container">
+                <form id="frmLogin" name="frmLogin" style="display: contents;" method="post" [formGroup]="form">
+                    <div class="left-cas-panel">
+                        <div class="login-castores-logo-container">
+                        </div>
+                        <div class="left-form-container">
+                            <div class="system-title system-title-alt">
+                                <h1>Inicia sesión</h1>
+                            </div>
+                            <mat-form-field class="example-full-width">
+                              <mat-label>Usuario</mat-label>
+                              <input matInput type="text" name="user" formControlName="user" [formControl]="$any(form).controls['user']">
+                            </mat-form-field>
+                            <mat-form-field class="example-full-width">
+                              <mat-label>Contraseña</mat-label>
+                              <input matInput type="password"  name="password" formControlName="password" [formControl]="$any(form).controls['password']">
+                            </mat-form-field>
+                            <div class="form-group">
+                              <button mat-stroked-button id="inicioSesion" color="primary" [disabled]="!form.valid" (click)='acceso()'>ENTRAR</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="right-cas-panel">
+                        <div class="right-form-container">
+                            <div class="system-title">
+                                <h1>Planeación Logística Paquetería</h1>
+                            </div>
+                            <div class="system-subtitle">
+                                <h4>Mantente conectado a la operación</h4>
+                                <h4>Inicia sesión</h4>
+                            </div>
+                        </div>
+                        <div class="system-footer">
+                            <h6>© Todos los derechos reservados</h6>
+                        </div>
+                        <div class="background-layer"></div>
+                        <div class="layer"></div>
+                    </div>
+                </form>
+            </div>
+        </div>

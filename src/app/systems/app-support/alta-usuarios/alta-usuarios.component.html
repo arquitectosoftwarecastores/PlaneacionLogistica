@@ -1,0 +1,129 @@
+<br><br><br>
+<div >
+  <h1 id="tituloUsuarios">Roles</h1>
+</div>
+<div class="felteOptimo">
+  <section class="example-container mat-elevation-z8" tabindex="0">
+    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef> No.
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.numero}} </td>
+      </ng-container>
+      <ng-container matColumnDef="personal">
+        <th mat-header-cell *matHeaderCellDef> Personal
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.personal}}% </td>
+      </ng-container>
+      <ng-container matColumnDef="sistema">
+        <th mat-header-cell *matHeaderCellDef> Sistema
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.sistema}} </td>
+      </ng-container>
+      <ng-container matColumnDef="tipoUsuario">
+        <th mat-header-cell *matHeaderCellDef> Tipo de usuario
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.tipoUsuario}} </td>
+      </ng-container>
+      <ng-container matColumnDef="roles">
+        <th mat-header-cell *matHeaderCellDef> Roles
+          <div>
+            <br><br>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> <button id="Modificar" type="button" class="btn btn-primary"
+            (click)="openDialogPermisos()">Modificar</button></td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">No existe</td>
+      </tr>
+    </table>
+  </section>
+  <br>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+
+  <ng-template #dialogTemplate>
+    <div id="datosUsuario">
+      <div id="datosUsuarioBox">
+        <h1>Alta usuario</h1>
+        <div id="personal">
+          <h3>Personal</h3>
+          <input type="text" class="form-control"><span class="input-group-text"
+            id="basic-addon1"><mat-icon>search</mat-icon></span>
+        </div>
+        <div id="usuario">
+          <h3>Usuario</h3>
+          <input type="text" class="form-control">
+          <h3>Contraseña</h3>
+          <input type="text" class="form-control">
+        </div>
+        <div id="pregunta">
+          <h3>Pregunta</h3>
+          <input type="text" class="form-control">
+        </div>
+        <div id="respuesta">
+          <h3>Respuesta</h3>
+          <input type="text" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div id="botones">
+      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+    </div>
+    <br>
+  </ng-template>
+
+  <ng-template #dialogRoles>
+    <div id="roles">
+      <div id="rolesbox">
+        <div cdkDropListGroup>
+          <div class="datosUsuario">
+            <h2>Roles de usuario:</h2>
+          </div>
+          <div class="groupbox">
+            <div class="rolesUsuario">
+              <h2>Roles usuario</h2>
+              <div cdkDropList [cdkDropListData]="items" class="example-list" cdkDropListSortingDisabled
+                (cdkDropListDropped)="drop($event)">
+                <div class="example-box" *ngFor="let item of items" cdkDrag>{{item}}</div>
+              </div>
+            </div>
+
+            <div class="rolesUsuario">
+              <h2>Roles disponibles</h2>
+
+              <div cdkDropList [cdkDropListData]="basket" class="example-list" (cdkDropListDropped)="drop($event)">
+                <div class="example-box" *ngFor="let item of basket" cdkDrag>{{item}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div id="botones">
+      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+    </div>
+    <br>
+  </ng-template>
+</div>

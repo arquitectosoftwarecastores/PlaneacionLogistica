@@ -14,16 +14,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'planeacion-logistica-paqueteria'`, () => {
+  it(`should have as title 'planeacion'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('planeacion-logistica-paqueteria');
+    expect(app.title).toEqual('planeacion');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('planeacion-logistica-paqueteria app is running!');
+    expect(compiled.querySelector('.content span')?.textContent).toContain('planeacion app is running!');
   });
 });

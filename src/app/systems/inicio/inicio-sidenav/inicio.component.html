@@ -1,0 +1,49 @@
+<mat-drawer-container class="example-container" autosize>
+  <mat-toolbar>
+    <button mat-icon-button class="example-icon" aria-label="Example icon-button with menu icon"
+      (click)="drawer.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <div id="datosPersonal">
+      <div id="nombrePersonal">
+        <button mat-button [matMenuTriggerFor]="menu">{{nombreCompletoUsuario}}</button>
+        <mat-menu #menu="matMenu" [overlapTrigger]="false">
+          <button mat-menu-item (click)="logout()">Cerrar sesion</button>
+        </mat-menu>
+      </div>
+      <span id="rlav-actual-page"></span>
+      <mat-icon id="iconVersion">language</mat-icon>
+    </div>
+  </mat-toolbar>
+  <mat-drawer #drawer class="example-sidenav" mode="side" opened="true">
+    <img id="imagenInicio" src="assets/img/vector-grupo-castores.svg">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/home/logo" routerLinkActive="active"
+        ariaCurrentWhenActive="page"><mat-icon>home</mat-icon>Inicio</a>
+    </mat-nav-list>
+    <mat-accordion>
+      <mat-expansion-panel hideToggle (opened)="panelAbierto(panel2)" #panel2>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>event</mat-icon> Principal
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-nav-list>
+          <a mat-list-item routerLink="/home/flete/principalPlaneacion" routerLinkActive="active"
+            ariaCurrentWhenActive="page">Planeacion</a>
+          <a mat-list-item routerLink="/home/flete/consultaCorte" routerLinkActive="active"
+            ariaCurrentWhenActive="page">Consultas</a>
+          <a mat-list-item routerLink="/home/flete/fleteOptimo" routerLinkActive="active" ariaCurrentWhenActive="page">Flete
+            optimo</a>
+          <a mat-list-item routerLink="/home/satelite/sateliteSucursal" routerLinkActive="active" ariaCurrentWhenActive="page">Satelite
+            Sucursal</a>
+        </mat-nav-list>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </mat-drawer>
+  <mat-drawer-container>
+    <div id="cuadro">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-drawer-container>
+</mat-drawer-container>

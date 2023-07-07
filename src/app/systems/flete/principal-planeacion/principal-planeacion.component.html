@@ -1,0 +1,221 @@
+<br><br>
+<div>
+  <h1 id="tituloPlaneacionPrincipal">PLANEACION PRINCIPAL</h1>
+</div>
+<br><br>
+<div class="filtroFecha">
+  <h5>Fecha inicio</h5>
+  <input type="date" class="form-control" name="" id="">
+  <h5>Fecha fin</h5>
+  <input type="date" class="form-control">
+</div>
+<div class="filtrofleteSelect">
+  <div>
+    <h5>Venta</h5>
+    <mat-form-field>
+      <mat-select [formControl]="toppings" multiple>
+        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div>
+    <h5>Tipo</h5>
+    <mat-form-field>
+      <mat-select [formControl]="toppings" multiple>
+        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <div>
+    <h5>Origen</h5>
+    <input type="text" class="form-control" name="" id="">
+  </div>
+  <div>
+    <h5>Zona de influencia</h5>
+    <input type="text" class="form-control" name="" id="">
+  </div>
+</div>
+<div id="fletes">
+  <div class="botonesFiltro">
+    <button id="agregar" type="button" class="btn btn-primary" *ngIf="permisoAInsertarAgregar == 1">Agregar corte</button>
+    <button id="Buscar" type="button" class="btn btn-primary">Buscar</button>
+    <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
+  </div>
+</div>
+
+<div class="felteOptimo">
+  <section class="example-container mat-elevation-z8" tabindex="0">
+    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
+      <ng-container matColumnDef="index">
+        <th mat-header-cell *matHeaderCellDef> </th>
+        <td mat-cell *matCellDef="let element; let i = index;">{{i}}</td>
+      </ng-container>
+      <ng-container matColumnDef="talon">
+        <th mat-header-cell *matHeaderCellDef> #Talón
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> </td>
+      </ng-container>
+      <ng-container matColumnDef="talontipo">
+        <th mat-header-cell *matHeaderCellDef> Talón tipo
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> </td>
+      </ng-container>
+      <ng-container matColumnDef="flete">
+        <th mat-header-cell *matHeaderCellDef> Flete
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.flete}} </td>
+      </ng-container>
+      <ng-container matColumnDef="cdp">
+        <th mat-header-cell *matHeaderCellDef> CDP
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.cdp}}% </td>
+      </ng-container>
+      <ng-container matColumnDef="bultos">
+        <th mat-header-cell *matHeaderCellDef> Bultos
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.bultos}} </td>
+      </ng-container>
+      <ng-container matColumnDef="contiene">
+        <th mat-header-cell *matHeaderCellDef> Volumen(m3)
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.contiene}} </td>
+      </ng-container>
+      <ng-container matColumnDef="volumen">
+        <th mat-header-cell *matHeaderCellDef> Que contiene
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.volumen}} </td>
+      </ng-container>
+      <ng-container matColumnDef="noEconomico">
+        <th mat-header-cell *matHeaderCellDef> Unidad
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> </td>
+      </ng-container>
+      <ng-container matColumnDef="origen">
+        <th mat-header-cell *matHeaderCellDef> Origen
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.origen}} </td>
+      </ng-container>
+      <ng-container matColumnDef="tipoVenta">
+        <th mat-header-cell *matHeaderCellDef> Tipo Guia
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> </td>
+      </ng-container>
+      <ng-container matColumnDef="destino">
+        <th mat-header-cell *matHeaderCellDef> Destino
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+              (keyup)="applyFilter($event)" #input>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row">{{row.destino}}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="6">No existe</td>
+      </tr>
+    </table>
+  </section>
+  <br>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+
+  <ng-template #dialogTemplate>
+    <div id="datosUsuario">
+      <div id="datosUsuarioBox">
+        <h1>Alta usuario</h1>
+        <div id="personal">
+          <h3>Personal</h3>
+          <input type="text" class="form-control"><span class="input-group-text"
+            id="basic-addon1"><mat-icon>search</mat-icon></span>
+        </div>
+        <div id="usuario">
+          <h3>Usuario</h3>
+          <input type="text" class="form-control">
+          <h3>Contraseña</h3>
+          <input type="text" class="form-control">
+        </div>
+        <div id="pregunta">
+          <h3>Pregunta</h3>
+          <input type="text" class="form-control">
+        </div>
+        <div id="respuesta">
+          <h3>Respuesta</h3>
+          <input type="text" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div id="botones">
+      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+    </div>
+    <br>
+  </ng-template>
+
+  <ng-template #dialogRoles>
+    <div id="roles">
+      <div id="rolesbox">
+        <div cdkDropListGroup>
+          <div class="rolesUsuario">
+            <h2>Available items</h2>
+            <div cdkDropList [cdkDropListData]="items" class="example-list" cdkDropListSortingDisabled
+              (cdkDropListDropped)="drop($event)">
+              <div class="example-box" *ngFor="let item of items" cdkDrag>{{item}}</div>
+            </div>
+          </div>
+          <div class="rolesUsuario">
+            <h2>Shopping basket</h2>
+            <div cdkDropList [cdkDropListData]="basket" class="example-list" (cdkDropListDropped)="drop($event)">
+              <div class="example-box" *ngFor="let item of basket" cdkDrag>{{item}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="botones">
+      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+    </div>
+    <br>
+  </ng-template>
+
+</div>

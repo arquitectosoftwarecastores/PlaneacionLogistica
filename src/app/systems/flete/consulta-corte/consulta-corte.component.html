@@ -1,0 +1,89 @@
+<br>
+<div >
+  <h1 id="tituloConsultaCorte">CONSULTA CORTE</h1>
+</div>
+<br>
+<div class="filtroFecha">
+  <h5>Fecha inicio</h5>
+  <input type="date" class="form-control" name="" id="">
+  <h5>Fecha fin</h5>
+  <input type="date" class="form-control">
+  <h5>Tipo</h5>
+    <select class="custom-select" id="inputGroupSelect01">
+      <option selected>Choose...</option>
+      <option value="1">One</option>
+      <option value="2">Two</option>
+      <option value="3">Three</option>
+    </select>
+</div>
+
+
+<div id="fletes">
+  <div class="ConsultaCorteFiltro">
+    <button id="Buscar" type="button" class="btn btn-primary">Buscar</button>
+    <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
+  </div>
+</div>
+<br>
+<br><br>
+
+<div class="consultaCorte">
+  <section class="example-container mat-elevation-z8" tabindex="0">
+    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
+      <ng-container matColumnDef="numero">
+        <th mat-header-cell *matHeaderCellDef> #Corte
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.numero}} </td>
+      </ng-container>
+      <ng-container matColumnDef="personal">
+        <th mat-header-cell *matHeaderCellDef> Fecha
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.personal}}% </td>
+      </ng-container>
+      <ng-container matColumnDef="sistema">
+        <th mat-header-cell *matHeaderCellDef> Hora
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.sistema}} </td>
+      </ng-container>
+      <ng-container matColumnDef="tipoUsuario">
+        <th mat-header-cell *matHeaderCellDef> Tipo de corte
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.tipoUsuario}} </td>
+      </ng-container>
+      <ng-container matColumnDef="roles">
+        <th mat-header-cell *matHeaderCellDef> Detalle
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> <button mat-button>
+          <mat-icon>assignment</mat-icon>
+        </button></td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" colspan="4">No existe</td>
+      </tr>
+    </table>
+  </section>
+  <br>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+</div>
