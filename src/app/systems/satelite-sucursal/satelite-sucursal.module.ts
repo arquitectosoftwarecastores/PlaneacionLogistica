@@ -8,7 +8,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
-
+import { NgSelectModule } from '@ng-select/ng-select';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 @NgModule({
   imports: [
     CommonModule,
@@ -16,7 +17,7 @@ import { oficinasService } from 'src/app/services/oficinas.service';
     AngularMaterialModule,
     FormsModule,
     ReactiveFormsModule,
-
+    AutoCompleteModule
   ],
   declarations: [SateliteComponent],
   exports:[],

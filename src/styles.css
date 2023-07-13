@@ -15,6 +15,7 @@ body {
 
 @import url('https://fonts.googleapis.com/css?family=Allerta+Stencil');
 @import url('https://fonts.googleapis.com/css?family=Questrial');
+@import "~@ng-select/ng-select/themes/default.theme.css";
 
 .master-container {
   padding-left: 0;
@@ -732,6 +733,7 @@ span {
 #datosSatelite #datosSateliteBox div {
   display: block;
   padding: 5px;
+  width: 100%;
 }
 
 #datosSatelite #datosSateliteBox div #buscarDatosflete {
@@ -746,13 +748,13 @@ span {
 #datosSatelite #datosSateliteBox div input {
   margin-left: 3%;
   width: 82%;
+  background: whitesmoke;
 }
-
-#datosSatelite #datosSateliteBox #usuario input {
-  margin-left: 4%;
-  width: 80%;
+#datosSatelite .mat-mdc-form-field {
+  width: 100%;
+  height: 80px
 }
-
+/*
 #datosSatelite #datosSateliteBox #respuesta input {
   margin-left: 4%;
   width: 80%;
@@ -761,7 +763,10 @@ span {
 #datosSatelite #datosSateliteBox #personal input {
   width: 70%;
 }
-
+*/
+.custom-form-field.mat-mdc-form-field-infix {
+  width: 100%;
+}
 
 #botonesSatelite {
   display: flex;
@@ -1009,4 +1014,18 @@ span {
 
 .p-overlay {
   transform: translateY(calc(-100% - 118px));
+}
+
+.spinner-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }

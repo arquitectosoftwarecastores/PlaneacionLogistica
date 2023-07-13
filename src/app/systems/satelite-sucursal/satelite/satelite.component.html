@@ -4,7 +4,7 @@
 </div>
 
 <div id="fletes">
-  <button id="agregarFlete" type="button" class="btn btn-primary" (click)="openDialog()"
+  <button id="agregarFlete" type="button" class="btn btn-primary" (click)="abrirModalAgregar()"
     *ngIf="permisoAInsertarAgregar == 1">Agregar</button>
 </div>
 
@@ -14,7 +14,7 @@
       <ng-container matColumnDef="nombrePertenece">
         <th class="header" mat-header-cell *matHeaderCellDef> Sucursal
           <div>
-            <input type="text" class="form-control" [formControl]="nombrePerteneceFiltro">
+            <input type="text" class="form-control" [formControl]="nombrePerteneceFiltro" (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombrePertenece}} </td>
@@ -22,7 +22,7 @@
       <ng-container matColumnDef="nombreSatelite">
         <th class="header" mat-header-cell *matHeaderCellDef> Satelite
           <div class="filter">
-            <input type="text" class="form-control" [formControl]="sateliteFiltro">
+            <input type="text" class="form-control" [formControl]="sateliteFiltro" (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombreSatelite}} </td>
@@ -30,32 +30,33 @@
       <ng-container matColumnDef="estatus">
         <th class="header" mat-header-cell *matHeaderCellDef> Estatus
           <div class="filter">
-            <input type="text" class="form-control" [formControl]="estatusFiltro">
+            <input type="text" class="form-control" [formControl]="estatusFiltro" (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.estatus == 1 ? 'ACTIVO' : 'INACTIVO' }}
         </td>
       </ng-container>
-      <ng-container matColumnDef="idPersonal">
+      <ng-container matColumnDef="nombrePersonal">
         <th class="header" mat-header-cell *matHeaderCellDef> Usuario
           <div class="filter">
-            <input type="text" class="form-control" [formControl]="perosnalFiltro">
+            <input type="text" class="form-control" [formControl]="personalFiltro" (input)="applyFilter()">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.idPersonal}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.nombrePersonal}} </td>
       </ng-container>
       <ng-container matColumnDef="fechaMod">
         <th class="header" mat-header-cell *matHeaderCellDef> Fecha modificacion
           <div class="filter">
-            <input type="text" class="form-control" [formControl]="fechaModFiltro">
+            <input type="text" class="form-control" [formControl]="fechaModFiltro" (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.fechaMod}} </td>
       </ng-container>
-      <ng-container matColumnDef="modificar">
+      <ng-container matColumnDef="idSucursalSatelite">
         <th mat-header-cell *matHeaderCellDef mat-sort-header> </th>
         <td mat-cell *matCellDef="let row"> <button id="Modificar" type="button" class="btn btn-primary"
-            (click)="openDialogPermisos()" *ngIf="permisoDActualizar == 1"><mat-icon>edit</mat-icon></button></td>
+            (click)="abrirModalModificar(row.idSucursalSatelite)"
+            *ngIf="permisoDActualizar == 1"><mat-icon>edit</mat-icon></button></td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -63,74 +64,66 @@
         <td class="mat-cell" colspan="4">No existe </td>
       </tr>
     </table>
-  </section>
-  <br>
-  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
-
-  <ng-template #dialogModificar>
-    <div id="datosSatelite">
-      <form id="formGroupSatelite" name="formGroupSatelite" style="display: contents;" method="post"
-        [formGroup]="formGroupSatelite">
-        <div id="datosSateliteBox">
-          <h1>Agregar Satelite</h1>
-          <div id="pregunta">
-            <h3>Sucursal</h3>
-            <input type="text" class="form-control"  formControlName="idSucursal">
-          </div>
-          <div id="respuesta">
-            <h3>Satelite</h3>
-            <input type="text" class="form-control" formControlName="idSatelite">
-          </div>
-          <div class="form-group" style="width: 100%;">
-            <h3>Estatus</h3>
-            <div class="switch-group" style="font-size: 0.8em;">
-              <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
-              <label class="switch">
-                <input type="checkbox" name="estatus"  formControlName="estatusSatelite">
-                <span class="slider round"></span>
-              </label>
-              <label style="padding: 0 0 0 1em;" for="activo">Activo</label>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-    <div id="botonesSatelite">
-      <button type="button" class="btn btn-primary" (click)="guardarSatelite()">Guardar</button>
-      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+    <div class="spinner-overlay" *ngIf="isLoading">
+      <mat-spinner color="primary"></mat-spinner>
     </div>
     <br>
-  </ng-template>
+  <mat-paginator #paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users" [pageSize]="5" [pageIndex]="0"
+      [length]="dataSource.data.length">
+    </mat-paginator>
+  </section>
 
-  <ng-template #dialogAgregar>
-    <div id="datosSatelite">
+</div>
+
+<ng-template #dialogModificar>
+  <div id="datosSatelite">
+    <form id="formGroupSatelite" name="formGroupSatelite" style="display: contents;" method="post"
+      [formGroup]="formGroupSatelite">
       <div id="datosSateliteBox">
-        <h1>Modificar Satelite</h1>
+        <h1>{{ modo === 'agregar' ? 'Agregar' : 'Modificar' }} Satelite</h1>
         <div id="pregunta">
           <h3>Sucursal</h3>
-          <input type="text" class="form-control">
+          <mat-form-field>
+            <input matInput type="text" class="form-control" id="idSucursal" formControlName="idSucursal"
+              [matAutocomplete]="autoSucursal" placeholder="Buscar por nombre" (input)="onInputSucursales($event)">
+            <mat-autocomplete #autoSucursal [displayWith]="displayFn">
+              <mat-option *ngFor="let sucursal of filteredSucursales" [value]="sucursal">
+                {{ sucursal.plaza }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
         </div>
         <div id="respuesta">
           <h3>Satelite</h3>
-          <input type="text" class="form-control">
+          <mat-form-field>
+            <input matInput type="text" class="form-control" id="idSatelite" formControlName="idSatelite" [matAutocomplete]="autoSatelite"
+            placeholder="Buscar por nombre" (input)="onInputSatelites($event)">
+            <mat-autocomplete #autoSatelite [displayWith]="displayFnSatelite">
+              <mat-option *ngFor="let satelite of filteredSatelites" [value]="satelite">
+                {{ satelite.nombre }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
         </div>
         <div class="form-group" style="width: 100%;">
           <h3>Estatus</h3>
           <div class="switch-group" style="font-size: 0.8em;">
             <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
             <label class="switch">
-              <input type="checkbox" name="estatus">
+              <input type="checkbox" name="estatus" id="estatusSatelite" formControlName="estatusSatelite"
+                (change)="toggleCheckbox()">
               <span class="slider round"></span>
             </label>
             <label style="padding: 0 0 0 1em;" for="activo">Activo</label>
           </div>
         </div>
       </div>
-    </div>
-    <div id="botonesSatelite">
-      <button type="button" class="btn btn-primary" (click)="guardarSatelite()">Guardar</button>
-      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
-    </div>
-    <br>
-  </ng-template>
-</div>
+    </form>
+  </div>
+  <div id="botonesSatelite">
+    <button type="button" class="btn btn-primary" (click)="guardarSatelite()">Guardar</button>
+    <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+  </div>
+  <br>
+</ng-template>

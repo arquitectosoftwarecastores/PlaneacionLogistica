@@ -14,8 +14,11 @@ import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
 import { sucursales_satelite } from '../../../interfaces/sucursales_satelite';
 import { oficinasService } from 'src/app/services/oficinas.service';
-import { FormControl, FormGroup } from '@angular/forms';
-
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Oficina } from 'src/app/interfaces/oficina';
+import { forkJoin } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
+import { satelite } from 'src/app/interfaces/satelite';
 export interface UserData {
   numero: string;
   personal: string;
@@ -32,7 +35,7 @@ export interface UserData {
   templateUrl: './satelite.component.html',
   styleUrls: ['./satelite.component.css'],
 })
-export class SateliteComponent {
+export class SateliteComponent implements OnInit {
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -43,38 +46,49 @@ export class SateliteComponent {
   private permisoIImprimir: any = 0;
   public formGroupSatelite: any;
 
-  nombrePerteneceFiltro = new FormControl('');
-  sateliteFiltro = new FormControl('');
-  estatusFiltro = new FormControl('');
-  perosnalFiltro = new FormControl('');
-  fechaModFiltro = new FormControl('');
+  nombrePerteneceFiltro = new FormControl();
+  sateliteFiltro = new FormControl();
+  estatusFiltro = new FormControl();
+  personalFiltro = new FormControl();
+  fechaModFiltro = new FormControl();
 
-  displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'idPersonal', 'fechaMod', 'modificar'];
+  estatus: number = 0;
+  modo: string = 'agregar';
+  idSateliteSucursal!: number;
+  displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idSucursalSatelite'];
+  sucursales: Oficina[] = [];
+  satelites: satelite[] = [];
+  selectedSucursal: any;
+  selectedSatelite: any;
+  filteredSucursales: any[] = [];
+  filteredSatelites: any[] = [];
+  isLoading: boolean = true;
+
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
   private datosEncontrados: any = [];
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild('paginator') paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
   @ViewChild('dialogAgregar') dialogAgregar!: TemplateRef<any>;
   @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
-
-  constructor(public dialog: MatDialog, private activatedRoute: ActivatedRoute, private sateliteService: sateliteService,
-    public snackBar: MatSnackBar, private router: Router, private authService: AuthService,
+  agregar: any;
+  modificar: any;
+  constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
+    public snackBar: MatSnackBar, private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef,
     private oficinaService: oficinasService) {
-      this.formGroupSatelite = new FormGroup({
-        idSucursal: new FormControl(''),
-        idSatelite: new FormControl(''),
-        estatusSatelite: new FormControl('')
+    this.formGroupSatelite = new FormGroup({
+      idSucursal: new FormControl(),
+      idSatelite: new FormControl(),
+      estatusSatelite: new FormControl()
     });
 
     const SISTEMA: number = 14;
     const MODULO: number = 90;
-
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
-    console.log(obtienePermisosG)
+
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
         this.permisoAInsertarAgregar = (obtienePermisosG['datos']['a'] == 1) ? 1 : 0;
@@ -90,16 +104,7 @@ export class SateliteComponent {
           this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
           this.router.navigate(['/home/inicio']);
         } else {
-          this.sateliteService.getAllSatelite().subscribe(response => {
-            console.log("resultado");
-            console.log(response);
-            this.dataSource = new MatTableDataSource<sucursales_satelite>(response as sucursales_satelite[]);
-            this.dataSource.filterPredicate = this.createFilter();
-            this.dataSource.data.forEach(item => {
-              //Aqui va el personal
-            });
-            this.dataSource.sort = this.tablaSateliteSort;
-          })
+          this.cargarDatos();
         }
       } else {
         this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
@@ -110,68 +115,62 @@ export class SateliteComponent {
       this.router.navigate(['/home/inicio']);
     }
   }
-  filterValues = {
-    nombrePertenece: '',
-    nombreSatelite: '',
-    estatus: '',
-    idPersonal: '',
-    fechaMod: ''
-  };
+  ngOnInit(): void {
 
-
-  openDialogPermisos(): void {
-    const dialogRol = this.dialog.open(this.dialogAgregar);
-
-    dialogRol.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
+    this.formGroupSatelite = this.formBuilder.group({
+      idSucursal: '',
+      idSatelite: '',
+      estatusSatelite: ''
     });
+    forkJoin([this.oficinaService.getOficinas(), this.sateliteService.getSatelitesFaltantes()]).subscribe(
+      ([oficinas, satelite]) => {
+        this.sucursales = oficinas;
+        this.satelites = satelite;
+      },
+      (error) => {
+        console.error('Error al obtener los datos:', error);
+      }
+    );
+
+
+
   }
 
+  applyFilter() {
+    const filters = {
+      nombrePertenece: this.nombrePerteneceFiltro.value,
+      nombreSatelite: this.sateliteFiltro.value,
+      estatus: this.estatusFiltro.value,
+      nombrePersonal: this.personalFiltro.value,
+      fechaMod: this.fechaModFiltro.value
+    };
+
+    this.dataSource.filterPredicate = (data: sucursales_satelite, filter: string) => {
+      const filtersObj = JSON.parse(filter);
+      const nombrePerteneceMatch = data.nombrePertenece?.toLowerCase().includes(filtersObj.nombrePertenece?.toLowerCase() || '');
+      const nombreSateliteMatch = data.nombreSatelite?.toLowerCase().includes(filtersObj.nombreSatelite?.toLowerCase() || '');
+      const estatusMatch = data.estatus?.toString().toLowerCase().includes(filtersObj.estatus?.toLowerCase() || '');
+      const nombrePersonalMatch = data.nombrePersonal?.toLowerCase().includes(filtersObj.nombrePersonal?.toLowerCase() || '');
+      const fechaModMatch = data.fechaMod?.toString().toLowerCase().includes(filtersObj.fechaMod?.toLowerCase() || '');
+
+      return nombrePerteneceMatch && nombreSateliteMatch && estatusMatch && nombrePersonalMatch && fechaModMatch;
+    };
+
+    this.dataSource.filter = JSON.stringify(filters);
+  }
+  validaInformacion(dato: any): boolean {
+    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
   oncloseDialog(): void {
     this.dialog.closeAll();
 
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-
-    this.nombrePerteneceFiltro.valueChanges
-      .subscribe(
-        nombrePertenece => {
-          this.filterValues.nombrePertenece = nombrePertenece!;
-          this.dataSource.filter = JSON.stringify(this.filterValues).toLowerCase();
-        }
-      )
-    this.sateliteFiltro.valueChanges
-      .subscribe(
-        nombreSatelite => {
-          this.filterValues.nombreSatelite = nombreSatelite!;
-          this.dataSource.filter = JSON.stringify(this.filterValues).toLowerCase();
-        }
-      )
-    this.estatusFiltro.valueChanges
-      .subscribe(
-        estatus => {
-          this.filterValues.estatus = estatus!;
-          this.dataSource.filter = JSON.stringify(this.filterValues).toLowerCase();
-        }
-      )
-    this.perosnalFiltro.valueChanges
-      .subscribe(
-        idPersonal => {
-          this.filterValues.idPersonal = idPersonal!;
-          this.dataSource.filter = JSON.stringify(this.filterValues).toLowerCase();
-        }
-      )
-    this.fechaModFiltro.valueChanges
-      .subscribe(
-        fechaMod => {
-          this.filterValues.fechaMod = fechaMod!;
-          this.dataSource.filter = JSON.stringify(this.filterValues).toLowerCase();
-        }
-      )
-  }
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
@@ -185,43 +184,149 @@ export class SateliteComponent {
     });
   }
 
-  createFilter(): (data: any, filter: string) => boolean {
-    let filterFunction = function (data: { nombrePertenece: string; nombreSatelite: string; estatus: string; idPersonal: string; fechaMod: string; }, filter: string): boolean {
-      let searchTerms = JSON.parse(filter);
-      console.log(filter);
-      console.log(searchTerms);
-      return data.nombrePertenece.toLowerCase().indexOf(searchTerms.nombrepertenece) !== -1
-        && data.nombreSatelite.toLowerCase().indexOf(searchTerms.nombresatelite) !== -1
-        && data.estatus.toString().toLowerCase().indexOf(searchTerms.estatus) !== -1
-        && data.idPersonal.toString().toLowerCase().indexOf(searchTerms.idpersonal) !== -1
-        && data.fechaMod.toLowerCase().indexOf(searchTerms.fechamod) !== -1;
-    }
-    return filterFunction;
-  }
 
-  validaInformacion(dato: any): boolean {
-    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
-      return true;
-    }
-    else {
-      return false;
-    }
+
+  toggleCheckbox() {
+    this.estatus = this.estatus === 0 ? 1 : 0;
   }
   guardarSatelite() {
-    const agregar = {
-      sucursal:this.formGroupSatelite.idSucursal,
-      satelite:this.formGroupSatelite.idSatelite,
-      estatus:this.formGroupSatelite.estatusSatelite
-    };
-    console.log(agregar);
-    /*this.sateliteService.setSatelite(agregar).subscribe(
-      (success: any) => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = ("0" + (today.getMonth() + 1)).slice(-2);
+    const day = ("0" + today.getDate()).slice(-2);
+    const horas = today.getHours();
+    const minutos = today.getMinutes();
+    const segundos = today.getSeconds();
+    const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    const formattedDate = `${year}-${month}-${day}`;
+    const sateliteSeleccionado = this.formGroupSatelite.value.idSatelite;
+    console.log(sateliteSeleccionado);
+    console.log(sateliteSeleccionado.id);
+    const claveSatelite = sateliteSeleccionado.clave;
+    const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
+    console.log(sucursalSeleccionado);
+    console.log(sucursalSeleccionado.clave);
 
-      },
-      (error: any) => {
+    const id = sucursalSeleccionado.id;
+    console.log(this.modo);
+    if (this.modo === 'agregar') {
+      this.agregar = {
+        idOficinaSatelite: sateliteSeleccionado.id,
+        idOficinaPertenece: sucursalSeleccionado.clave,
+        estatus: this.estatus,
+        idPersonal: this.obtenerIdPersonal(),
+        fechaMod: formattedDate,
+        horaMod: formattedDate + 'T' + tiempo
+      };
+      console.log(this.agregar);
+      this.sateliteService.setSatelite(this.agregar).subscribe(
+        (success: any) => {
+          this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
+          this.cargarDatos();
+          this.oncloseDialog();
+        },
+        (error: any) => {
+          console.log("error");
+        });
+    } else if (this.modo === 'modificar') {
+      this.modificar = {
+        idSucursalSatelite: this.idSateliteSucursal,
+        idOficinaSatelite: this.formGroupSatelite.value.idSatelite,
+        idOficinaPertenece: this.formGroupSatelite.value.idSucursal,
+        estatus: this.estatus,
+        idPersonal: this.obtenerIdPersonal(),
+        fechaMod: formattedDate,
+        horaMod: formattedDate + 'T' + tiempo
+      };
+      console.log(this.modificar);
+      this.sateliteService.updateSatelite(this.modificar).subscribe(
+        (success: any) => {
+          this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
+        },
+        (error: any) => {
+          console.log("error");
+        });
 
-      });*/
+    }
+  }
+
+  obtenerIdPersonal(): string {
+    let usuarioJson = JSON.parse(sessionStorage.getItem('usuario')!);;
+    return usuarioJson.id;
+  }
+
+  abrirModalAgregar() {
+    this.modo = 'agregar';
+    this.openDialog();
+  }
+
+  abrirModalModificar(idSatelite: number) {
+    this.modo = 'modificar';
+    this.idSateliteSucursal = idSatelite;
+    //buscar satelite
+    //agregar valores al select
+    //aparecer y desaparecer etiquetas
+
+    this.openDialog();
+  }
+
+  displayFn(sucursal: any): string {
+    this.selectedSatelite = sucursal.clave;
+    return sucursal ? sucursal.plaza : '';
+  }
+  displayFnSatelite(satelite: any): string {
+    console.log(satelite);
+    return satelite ? satelite.nombre.trim() : '';
+  }
+
+  filtrarDatosSucursal(query: string): any[] {
+    let filtered: any[] = [];
+    if (query) {
+      const lowercaseQuery = query.toLowerCase();
+      filtered = this.sucursales.filter((sucursal) =>
+        sucursal.plaza.toLowerCase().includes(lowercaseQuery)
+      );
+    } else {
+      filtered = this.sucursales;
+    }
+    return filtered;
+  }
+  filtrarDatosSatelite(query: string): any[] {
+    let filtered: any[] = [];
+    if (query) {
+      const lowercaseQuery = query.toLowerCase();
+      filtered = this.satelites.filter((satelite) =>
+        satelite.nombre.toLowerCase().includes(lowercaseQuery)
+      );
+    } else {
+      filtered = this.satelites;
+    }
+    return filtered;
+  }
+
+  onInputSucursales(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const query = inputElement.value;
+    this.filteredSucursales = this.filtrarDatosSucursal(query);
+  }
+  onInputSatelites(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const query = inputElement.value;
+    this.filteredSatelites = this.filtrarDatosSatelite(query);
+  }
+  cargarDatos(){
+    this.isLoading = true;
+    this.sateliteService.getAllSatelite().subscribe(response => {
+      this.dataSource = new MatTableDataSource<sucursales_satelite>(response as sucursales_satelite[]);
+      this.dataSource.paginator = this.paginator;
+      this.paginator.pageSize = 5;
+      this.dataSource.sort = this.tablaSateliteSort;
+      this.isLoading = false;
+    },
+    (error: any) => {
+      console.error('Error al obtener los datos:', error);
+      this.isLoading = false;
+    })
   }
 
 }
-

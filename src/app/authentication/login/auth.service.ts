@@ -85,6 +85,7 @@ export class AuthService {
       this._usuario = new Usuario();
       this._usuario.expiresIn = payload.heweexpirandoando;
       this._usuario.username = payload.user_name; this._usuario.id = response.idUsuario;
+      this._usuario.idPersonal= response.idPersonal;
       this._usuario.nombre = response.nombre;
       this._usuario.idPuesto = response.idPuesto;
       this._usuario.apellido = response.apellidoPaterno;

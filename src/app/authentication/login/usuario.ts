@@ -1,6 +1,7 @@
 export class Usuario {
   id!:number;
   idUsuario!:string;
+  idPersonal!:string;
   idPuesto!:string;
   idOficina!: string;
   plazaOficina!:string;

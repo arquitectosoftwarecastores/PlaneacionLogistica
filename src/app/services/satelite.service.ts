@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { sucursales_satelite } from '../interfaces/sucursales_satelite';
 
 import { AppsettingsComponent } from '../app-settings/appsettings.component'
+import { satelite } from '../interfaces/satelite';
 
 
 
@@ -24,7 +25,7 @@ export class sateliteService {
   }
 
   setSatelite(data:any){
-    return this.http.post(this.appsettings.API_ENDPOINT + `talones/correctComplementoCP/`, data)
+    return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/create/`, data)
     .pipe(
       catchError(e => {
         if (e.error.message) {
@@ -34,10 +35,21 @@ export class sateliteService {
       })
     );
   }
-
-  updateSatelite(){
-
+  updateSatelite(data:any){
+    return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/update`, data)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          console.error(e.error.message);
+        }
+        return throwError(e);
+      })
+    );
   }
+  getSatelitesFaltantes(){
+    return this.http.get<satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasFaltantes`);
+  }
+
 
 
 }
