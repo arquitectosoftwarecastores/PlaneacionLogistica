@@ -3,12 +3,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, } from '@angular/material/dialog';
-import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
@@ -17,7 +12,6 @@ import { oficinasService } from 'src/app/services/oficinas.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
-import { ChangeDetectorRef } from '@angular/core';
 import { satelite } from 'src/app/interfaces/satelite';
 export interface UserData {
   numero: string;
@@ -54,8 +48,8 @@ export class SateliteComponent implements OnInit {
 
   estatus: number = 0;
   modo: string = 'agregar';
-  idSateliteSucursal!: number;
-  displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idSucursalSatelite'];
+  idOficinaSatelite!: number;
+  displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idOficinaSatelite'];
   sucursales: Oficina[] = [];
   satelites: satelite[] = [];
   selectedSucursal: any;
@@ -63,10 +57,15 @@ export class SateliteComponent implements OnInit {
   filteredSucursales: any[] = [];
   filteredSatelites: any[] = [];
   isLoading: boolean = true;
+  inputOficinaSatelite = false;
+  inputSatelites = false;
+  inputValue = '';
+  placeholderText = '';
+  placeholderSucursal = '';
+  defaultSatelite = '';
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
-  private datosEncontrados: any = [];
   @ViewChild('paginator') paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
@@ -74,17 +73,46 @@ export class SateliteComponent implements OnInit {
   @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
+
   agregar: any;
   modificar: any;
   constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
-    public snackBar: MatSnackBar, private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef,
-    private oficinaService: oficinasService) {
+    public snackBar: MatSnackBar, private router: Router, private authService: AuthService,private oficinaService: oficinasService)
+    {}
+  ngOnInit(): void {
+
     this.formGroupSatelite = new FormGroup({
       idSucursal: new FormControl(),
       idSatelite: new FormControl(),
-      estatusSatelite: new FormControl()
+      estatusSatelite: new FormControl(),
+      idoficinaSatelite: new FormControl()
     });
+    this.obtenerPermisos();
+    this.formGroupSatelite = this.formBuilder.group({
+      idSucursal: '',
+      idSatelite: '',
+      estatusSatelite: '',
+      idoficinaSatelite: { value: '', disabled: true }
+    });
+    forkJoin([this.oficinaService.getOficinas(), this.sateliteService.getSatelitesFaltantes()]).subscribe(
+      ([oficinas, satelite]) => {
+        this.sucursales = oficinas;
+        this.satelites = satelite;
+      },
+      (error) => {
+        console.error('Error al obtener los datos:', error);
+      }
+    );
+  }
+  /**
+    * obtenerPermisos: Funcion para obtener permisos y validar
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
 
+  obtenerPermisos(){
     const SISTEMA: number = 14;
     const MODULO: number = 90;
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
@@ -115,27 +143,14 @@ export class SateliteComponent implements OnInit {
       this.router.navigate(['/home/inicio']);
     }
   }
-  ngOnInit(): void {
-
-    this.formGroupSatelite = this.formBuilder.group({
-      idSucursal: '',
-      idSatelite: '',
-      estatusSatelite: ''
-    });
-    forkJoin([this.oficinaService.getOficinas(), this.sateliteService.getSatelitesFaltantes()]).subscribe(
-      ([oficinas, satelite]) => {
-        this.sucursales = oficinas;
-        this.satelites = satelite;
-      },
-      (error) => {
-        console.error('Error al obtener los datos:', error);
-      }
-    );
-
-
-
-  }
-
+  /**
+    * applyFilter: Funcion para filtrar la tabla por cada columna
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   applyFilter() {
     const filters = {
       nombrePertenece: this.nombrePerteneceFiltro.value,
@@ -147,9 +162,10 @@ export class SateliteComponent implements OnInit {
 
     this.dataSource.filterPredicate = (data: sucursales_satelite, filter: string) => {
       const filtersObj = JSON.parse(filter);
+      const estatusSatelite = data.estatus === 1 ? 'Activo' : 'Inactivo';
       const nombrePerteneceMatch = data.nombrePertenece?.toLowerCase().includes(filtersObj.nombrePertenece?.toLowerCase() || '');
       const nombreSateliteMatch = data.nombreSatelite?.toLowerCase().includes(filtersObj.nombreSatelite?.toLowerCase() || '');
-      const estatusMatch = data.estatus?.toString().toLowerCase().includes(filtersObj.estatus?.toLowerCase() || '');
+      const estatusMatch = estatusSatelite?.toString().toLowerCase().includes(filtersObj.estatus?.toLowerCase() || '');
       const nombrePersonalMatch = data.nombrePersonal?.toLowerCase().includes(filtersObj.nombrePersonal?.toLowerCase() || '');
       const fechaModMatch = data.fechaMod?.toString().toLowerCase().includes(filtersObj.fechaMod?.toLowerCase() || '');
 
@@ -158,6 +174,14 @@ export class SateliteComponent implements OnInit {
 
     this.dataSource.filter = JSON.stringify(filters);
   }
+  /**
+    * validaInformacion: Funcion para validar la informacion para la tabla
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   validaInformacion(dato: any): boolean {
     if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
       return true;
@@ -166,16 +190,40 @@ export class SateliteComponent implements OnInit {
       return false;
     }
   }
+  /**
+    * oncloseDialog: Funcion para cerrar el modal
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   oncloseDialog(): void {
     this.dialog.closeAll();
 
   }
 
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
   }
+  /**
+    * openDialog: Funcion para abrir el modal
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   openDialog(): void {
     const dialogRef = this.dialog.open(this.dialogModificar);
 
@@ -185,10 +233,26 @@ export class SateliteComponent implements OnInit {
   }
 
 
+  /**
+    * toggleCheckbox: Funcion para darle el valor 1 o 0 del checkbox
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
 
   toggleCheckbox() {
     this.estatus = this.estatus === 0 ? 1 : 0;
   }
+
+  /**
+    * guardarSatelite: Funcion para guardar el nuevo satelite con su sucursal
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   guardarSatelite() {
     const today = new Date();
     const year = today.getFullYear();
@@ -200,15 +264,8 @@ export class SateliteComponent implements OnInit {
     const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
     const formattedDate = `${year}-${month}-${day}`;
     const sateliteSeleccionado = this.formGroupSatelite.value.idSatelite;
-    console.log(sateliteSeleccionado);
-    console.log(sateliteSeleccionado.id);
-    const claveSatelite = sateliteSeleccionado.clave;
     const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
-    console.log(sucursalSeleccionado);
-    console.log(sucursalSeleccionado.clave);
 
-    const id = sucursalSeleccionado.id;
-    console.log(this.modo);
     if (this.modo === 'agregar') {
       this.agregar = {
         idOficinaSatelite: sateliteSeleccionado.id,
@@ -218,7 +275,7 @@ export class SateliteComponent implements OnInit {
         fechaMod: formattedDate,
         horaMod: formattedDate + 'T' + tiempo
       };
-      console.log(this.agregar);
+
       this.sateliteService.setSatelite(this.agregar).subscribe(
         (success: any) => {
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
@@ -229,10 +286,11 @@ export class SateliteComponent implements OnInit {
           console.log("error");
         });
     } else if (this.modo === 'modificar') {
+      console.log(this.defaultSatelite);
       this.modificar = {
-        idSucursalSatelite: this.idSateliteSucursal,
-        idOficinaSatelite: this.formGroupSatelite.value.idSatelite,
-        idOficinaPertenece: this.formGroupSatelite.value.idSucursal,
+        idSucursalSatelite: this.idOficinaSatelite,
+        idOficinaSatelite: this.inputValue,
+        idOficinaPertenece: sucursalSeleccionado.clave === undefined ? this.defaultSatelite : sucursalSeleccionado.clave,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -242,6 +300,8 @@ export class SateliteComponent implements OnInit {
       this.sateliteService.updateSatelite(this.modificar).subscribe(
         (success: any) => {
           this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
+          this.cargarDatos();
+          this.oncloseDialog();
         },
         (error: any) => {
           console.log("error");
@@ -250,24 +310,62 @@ export class SateliteComponent implements OnInit {
     }
   }
 
+  /**
+    * obtenerIdPersonal: Funcion para obtener el idUsuario.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   obtenerIdPersonal(): string {
     let usuarioJson = JSON.parse(sessionStorage.getItem('usuario')!);;
     return usuarioJson.id;
   }
 
+  /**
+    * abrirModalAgregar: Funcion declarar y abrir el modal para agregar el satelite
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   abrirModalAgregar() {
     this.modo = 'agregar';
+    this.formGroupSatelite.get('idSucursal').setValue('');
+    this.formGroupSatelite.get('idSatelite').setValue('');
+    this.placeholderSucursal = '';
+    this.inputOficinaSatelite = false;
+    this.inputSatelites = true;
     this.openDialog();
   }
-
+/**
+    * abrirModalModificar: Funcion declarar y abrir el modal para modificar el satelite
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   abrirModalModificar(idSatelite: number) {
     this.modo = 'modificar';
-    this.idSateliteSucursal = idSatelite;
-    //buscar satelite
-    //agregar valores al select
-    //aparecer y desaparecer etiquetas
+    this.idOficinaSatelite = idSatelite;
+    this.inputOficinaSatelite = true;
+    this.inputSatelites = false;
+    let estatus = false;
+    this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
+      this.inputValue = response.idOficinaSatelite;
+      this.placeholderText = response.nombreSatelite;
+      this.defaultSatelite = response.idOficinaPertenece;
+      this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
+      this.placeholderSucursal = response.nombrePertenece;
+      this.formGroupSatelite.get('idSucursal').setValue('');
+      this.openDialog();
+    }, (error: any) => {
+      console.error('Error al obtener los datos:', error);
+    });
 
-    this.openDialog();
   }
 
   displayFn(sucursal: any): string {
@@ -278,6 +376,15 @@ export class SateliteComponent implements OnInit {
     console.log(satelite);
     return satelite ? satelite.nombre.trim() : '';
   }
+
+  /**
+    * filtrarDatosSucursal: Funcion para el filtrado de las sucursales
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
 
   filtrarDatosSucursal(query: string): any[] {
     let filtered: any[] = [];
@@ -291,6 +398,15 @@ export class SateliteComponent implements OnInit {
     }
     return filtered;
   }
+
+  /**
+    * filtrarDatosSatelite: Funcion para el filtrado de las sucursales
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   filtrarDatosSatelite(query: string): any[] {
     let filtered: any[] = [];
     if (query) {
@@ -304,6 +420,15 @@ export class SateliteComponent implements OnInit {
     return filtered;
   }
 
+  /**
+    * onInputSucursales: Funcion para el filtrado de las sucursales
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
+
   onInputSucursales(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     const query = inputElement.value;
@@ -314,7 +439,16 @@ export class SateliteComponent implements OnInit {
     const query = inputElement.value;
     this.filteredSatelites = this.filtrarDatosSatelite(query);
   }
-  cargarDatos(){
+
+  /**
+    * cargarDatos: Funcion para el llenado de los datos en la tabla de satelites sucursal
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
+  cargarDatos() {
     this.isLoading = true;
     this.sateliteService.getAllSatelite().subscribe(response => {
       this.dataSource = new MatTableDataSource<sucursales_satelite>(response as sucursales_satelite[]);
@@ -323,10 +457,14 @@ export class SateliteComponent implements OnInit {
       this.dataSource.sort = this.tablaSateliteSort;
       this.isLoading = false;
     },
-    (error: any) => {
-      console.error('Error al obtener los datos:', error);
-      this.isLoading = false;
-    })
+      (error: any) => {
+        console.error('Error al obtener los datos:', error);
+        this.isLoading = false;
+      })
+  }
+  selectSucursal(sucursal: any) {
+    this.selectedSatelite = sucursal;
+    this.formGroupSatelite.get('idSucursal').setValue(sucursal);
   }
 
 }

@@ -24,12 +24,16 @@ export class LoginComponent {
 
 
   constructor(private fb: FormBuilder, private router: Router, private authService: AuthService, public snackBar: MatSnackBar) {
-    this.usuario = new Usuario();
-    this.form = new FormGroup({
-      user: new FormControl(),
-      password: new FormControl()
-    });
+
   }
+  /**
+    * openSnackBar: Funcion para mostrar mensajes
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   openSnackBar(message: string, action: string) {
     this.snackBar.open(message, action, {
       duration: 3000
@@ -37,13 +41,25 @@ export class LoginComponent {
 
   }
   ngOnInit() {
+    this.usuario = new Usuario();
+    this.form = new FormGroup({
+      user: new FormControl(),
+      password: new FormControl()
+    });
     this.form = this.fb.group({
       user: [null, Validators.compose([Validators.required])],
       password: [null, Validators.compose([Validators.required])]
     });
 
   }
-
+  /**
+    * acceso: Funcion para dar acceso al sistema
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrollo43]
+    * @date 2023-07-05
+   */
   acceso(): void {
 
     this.authService.cerrarSesion();
