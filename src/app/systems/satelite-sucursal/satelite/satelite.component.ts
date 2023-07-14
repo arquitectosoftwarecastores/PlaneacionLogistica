@@ -9,7 +9,7 @@ import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
 import { sucursales_satelite } from '../../../interfaces/sucursales_satelite';
 import { oficinasService } from 'src/app/services/oficinas.service';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
 import { satelite } from 'src/app/interfaces/satelite';
@@ -63,6 +63,7 @@ export class SateliteComponent implements OnInit {
   placeholderText = '';
   placeholderSucursal = '';
   defaultSatelite = '';
+  isDisabled: boolean = false;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -87,6 +88,10 @@ export class SateliteComponent implements OnInit {
       estatusSatelite: new FormControl(),
       idoficinaSatelite: new FormControl()
     });
+    this.formGroupSatelite = this.formBuilder.group({
+      idSucursal: [null, Validators.compose([Validators.required])],
+      idSatelite: [null, Validators.compose([Validators.required])]
+    });
     this.obtenerPermisos();
     this.formGroupSatelite = this.formBuilder.group({
       idSucursal: '',
@@ -100,7 +105,7 @@ export class SateliteComponent implements OnInit {
         this.satelites = satelite;
       },
       (error) => {
-        console.error('Error al obtener los datos:', error);
+        this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
       }
     );
   }
@@ -148,8 +153,8 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
-    * @date 2023-07-05
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-06
    */
   applyFilter() {
     const filters = {
@@ -162,7 +167,7 @@ export class SateliteComponent implements OnInit {
 
     this.dataSource.filterPredicate = (data: sucursales_satelite, filter: string) => {
       const filtersObj = JSON.parse(filter);
-      const estatusSatelite = data.estatus === 1 ? 'Activo' : 'Inactivo';
+      const estatusSatelite = data.estatus === 1 ? 'Activado' : 'Inactivo';
       const nombrePerteneceMatch = data.nombrePertenece?.toLowerCase().includes(filtersObj.nombrePertenece?.toLowerCase() || '');
       const nombreSateliteMatch = data.nombreSatelite?.toLowerCase().includes(filtersObj.nombreSatelite?.toLowerCase() || '');
       const estatusMatch = estatusSatelite?.toString().toLowerCase().includes(filtersObj.estatus?.toLowerCase() || '');
@@ -179,7 +184,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   validaInformacion(dato: any): boolean {
@@ -195,7 +200,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   oncloseDialog(): void {
@@ -208,7 +213,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   openSnackBar(message: string, action: string, tiempo: number): void {
@@ -221,15 +226,11 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   openDialog(): void {
-    const dialogRef = this.dialog.open(this.dialogModificar);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
+   this.dialog.open(this.dialogModificar);
   }
 
 
@@ -238,8 +239,8 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
-    * @date 2023-07-05
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-07
    */
 
   toggleCheckbox() {
@@ -250,8 +251,8 @@ export class SateliteComponent implements OnInit {
     * guardarSatelite: Funcion para guardar el nuevo satelite con su sucursal
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
-    * @date 2023-07-05
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-08
    */
   guardarSatelite() {
     const today = new Date();
@@ -265,7 +266,6 @@ export class SateliteComponent implements OnInit {
     const formattedDate = `${year}-${month}-${day}`;
     const sateliteSeleccionado = this.formGroupSatelite.value.idSatelite;
     const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
-
     if (this.modo === 'agregar') {
       this.agregar = {
         idOficinaSatelite: sateliteSeleccionado.id,
@@ -280,13 +280,11 @@ export class SateliteComponent implements OnInit {
         (success: any) => {
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
           this.cargarDatos();
-          this.oncloseDialog();
         },
         (error: any) => {
-          console.log("error");
+          this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
         });
     } else if (this.modo === 'modificar') {
-      console.log(this.defaultSatelite);
       this.modificar = {
         idSucursalSatelite: this.idOficinaSatelite,
         idOficinaSatelite: this.inputValue,
@@ -296,18 +294,18 @@ export class SateliteComponent implements OnInit {
         fechaMod: formattedDate,
         horaMod: formattedDate + 'T' + tiempo
       };
-      console.log(this.modificar);
+
       this.sateliteService.updateSatelite(this.modificar).subscribe(
         (success: any) => {
           this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
           this.cargarDatos();
-          this.oncloseDialog();
         },
         (error: any) => {
-          console.log("error");
+          this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
         });
 
     }
+    this.oncloseDialog();
   }
 
   /**
@@ -315,7 +313,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   obtenerIdPersonal(): string {
@@ -328,8 +326,8 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
-    * @date 2023-07-05
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-10
    */
   abrirModalAgregar() {
     this.modo = 'agregar';
@@ -338,6 +336,8 @@ export class SateliteComponent implements OnInit {
     this.placeholderSucursal = '';
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
+    this.estatus=1;
+    this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
     this.openDialog();
   }
 /**
@@ -345,25 +345,26 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
-    * @date 2023-07-05
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-10
    */
   abrirModalModificar(idSatelite: number) {
     this.modo = 'modificar';
+    this.formGroupSatelite.get('idSucursal').setValue('');
     this.idOficinaSatelite = idSatelite;
     this.inputOficinaSatelite = true;
     this.inputSatelites = false;
-    let estatus = false;
+    this.isDisabled=false;
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
       this.inputValue = response.idOficinaSatelite;
       this.placeholderText = response.nombreSatelite;
       this.defaultSatelite = response.idOficinaPertenece;
       this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
       this.placeholderSucursal = response.nombrePertenece;
-      this.formGroupSatelite.get('idSucursal').setValue('');
+      this.estatus=response.estatus;
       this.openDialog();
     }, (error: any) => {
-      console.error('Error al obtener los datos:', error);
+      this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
     });
 
   }
@@ -373,7 +374,6 @@ export class SateliteComponent implements OnInit {
     return sucursal ? sucursal.plaza : '';
   }
   displayFnSatelite(satelite: any): string {
-    console.log(satelite);
     return satelite ? satelite.nombre.trim() : '';
   }
 
@@ -382,7 +382,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
 
@@ -391,7 +391,7 @@ export class SateliteComponent implements OnInit {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.sucursales.filter((sucursal) =>
-        sucursal.plaza.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.sucursales;
@@ -404,7 +404,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   filtrarDatosSatelite(query: string): any[] {
@@ -425,7 +425,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
 
@@ -445,7 +445,7 @@ export class SateliteComponent implements OnInit {
     *
     * @param fecha (string)
     * @return Date
-    * @author Oswaldo Ramirez [desarrollo43]
+    * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-05
    */
   cargarDatos() {
@@ -458,7 +458,7 @@ export class SateliteComponent implements OnInit {
       this.isLoading = false;
     },
       (error: any) => {
-        console.error('Error al obtener los datos:', error);
+        this.openSnackBar('Hubo un error al cargar los datos', '⛔', 3000);
         this.isLoading = false;
       })
   }

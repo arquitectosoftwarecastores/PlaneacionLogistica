@@ -20,7 +20,7 @@
         <td mat-cell *matCellDef="let row"> {{row.nombrePertenece}} </td>
       </ng-container>
       <ng-container matColumnDef="nombreSatelite">
-        <th class="header" mat-header-cell *matHeaderCellDef> Satelite
+        <th class="header" mat-header-cell *matHeaderCellDef> Satélite
           <div class="filter">
             <input type="text" class="form-control" [formControl]="sateliteFiltro" (input)="applyFilter()">
           </div>
@@ -33,7 +33,7 @@
             <input type="text" class="form-control" [formControl]="estatusFiltro" (input)="applyFilter()">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.estatus == 1 ? 'ACTIVO' : 'INACTIVO' }}
+        <td mat-cell *matCellDef="let row"> {{row.estatus == 1 ? 'ACTIVADO' : 'INACTIVO' }}
         </td>
       </ng-container>
       <ng-container matColumnDef="nombrePersonal">
@@ -80,7 +80,7 @@
     <form id="formGroupSatelite" name="formGroupSatelite" style="display: contents;" method="post"
       [formGroup]="formGroupSatelite">
       <div id="datosSateliteBox">
-        <h1>{{ modo === 'agregar' ? 'Agregar' : 'Modificar' }} Satelite</h1>
+        <h1>{{ modo === 'agregar' ? 'Agregar' : 'Modificar' }} Satélite</h1>
         <div id="pregunta">
           <h3>Sucursal</h3>
           <mat-form-field>
@@ -88,14 +88,14 @@
               [matAutocomplete]="autoSucursal" placeholder="Buscar por nombre" (input)="onInputSucursales($event)">
             <mat-autocomplete #autoSucursal [displayWith]="displayFn">
               <mat-option *ngFor="let sucursal of filteredSucursales" [value]="sucursal">
-                {{ sucursal.plaza }}
+                {{ sucursal.nombre }}
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
 
         </div>
         <div id="respuesta">
-          <h3>Satelite</h3>
+          <h3>Satélite</h3>
           <mat-form-field *ngIf="inputOficinaSatelite">
             <input matInput type="text"  class="form-control" id="idoficinaSatelite" formControlName="idoficinaSatelite" [value]="inputValue" [placeholder]="placeholderText" [disabled]="true">
           </mat-form-field>
@@ -114,11 +114,11 @@
           <div class="switch-group" style="font-size: 0.8em;">
             <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
             <label class="switch">
-              <input type="checkbox" name="estatus" id="estatusSatelite" formControlName="estatusSatelite"
+              <input type="checkbox" [disabled]="true" name="estatus" id="estatusSatelite" formControlName="estatusSatelite"
                 (change)="toggleCheckbox()">
               <span class="slider round"></span>
             </label>
-            <label style="padding: 0 0 0 1em;" for="activo">Activo</label>
+            <label style="padding: 0 0 0 1em;" for="activo">Activado</label>
           </div>
         </div>
       </div>

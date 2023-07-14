@@ -13,7 +13,7 @@ export class oficinasService {
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 
   getOficinas(){
-    return this.http.get<Oficina[]>(this.appsettings.API_ENDPOINT + `oficina/findOficinaByAll`);
+    return this.http.get<Oficina[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasCedis`);
   }
 
 }
