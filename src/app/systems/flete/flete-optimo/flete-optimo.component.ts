@@ -89,9 +89,7 @@ export class FleteOptimoComponent implements AfterViewInit {
     const MODULO: number = 88;
 
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
-    console.log(obtienePermisosG)
     if (obtienePermisosG != undefined) {
-      console.log(obtienePermisosG);
       if (obtienePermisosG['respuesta'] == true) {
         this.permisoAInsertarAgregar = (obtienePermisosG['datos']['a'] == 1) ? 1 : 0;
         this.permisoBConsultar = (obtienePermisosG['datos']['b'] == 1) ? 1 : 0;
@@ -123,17 +121,9 @@ export class FleteOptimoComponent implements AfterViewInit {
   }
   openDialog(): void {
     const dialogRef = this.dialog.open(this.dialogTemplate);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
   }
   openDialogModificar(): void {
     const dialogRol = this.dialog.open(this.modificarglete);
-
-    dialogRol.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
   }
   oncloseDialog(): void {
     this.dialog.closeAll();

@@ -74,7 +74,6 @@ export class LoginComponent {
 
     },
       err => {
-        console.log(err)
         switch (err.status) {
           case 400:
             this.openSnackBar('Credenciales inválidas.400', '⛔');

@@ -40,19 +40,26 @@ export class InicioComponent {
     this.nombreCompletoUsuario = this.obtenerNombre();
   }
 
-  panelAbierto(panel: MatExpansionPanel) {
-    this.expansionPanels.forEach((item: MatExpansionPanel) => {
-      if (item !== panel && item.expanded) {
-        item.close();
-      }
-    });
-  }
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-06-29
+   */
   obtenerNombre(): string {
     let usuarioJson = JSON.parse(sessionStorage.getItem('usuario')!);
-    console.log(usuarioJson);
     return usuarioJson.nombreCompleto;
   }
-  //Cerrar sesión :)
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-06-29
+   */
   logout(): void {
     this.authService.cerrarSesion();
     this.openSnackBar('Sesión cerrada.', '👋', 3000);
@@ -62,6 +69,14 @@ export class InicioComponent {
       }, 500);
     });
   }
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-06-28
+   */
   openSnackBar(message: string, action: string, tiempo: number) {
     this.snackBar.open(message, action, {
       duration: tiempo

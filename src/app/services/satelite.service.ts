@@ -20,7 +20,6 @@ export class sateliteService {
   }
 
   getAllSatelite():Observable<any>{
-    console.log(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getAll`);
     return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getAll`);
   }
 

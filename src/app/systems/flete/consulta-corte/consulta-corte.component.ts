@@ -83,7 +83,6 @@ export class ConsultaCorteComponent {
     const MODULO: number = 87;
 
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
-    console.log(obtienePermisosG)
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
         this.permisoAInsertarAgregar = (obtienePermisosG['datos']['a'] == 1) ? 1 : 0;
@@ -116,18 +115,10 @@ export class ConsultaCorteComponent {
   }
   openDialog(): void {
     const dialogRef = this.dialog.open(this.dialogTemplate);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
   }
 
   openDialogPermisos(): void {
     const dialogRol = this.dialog.open(this.dialogRoles);
-
-    dialogRol.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
   }
 
   oncloseDialog(): void {

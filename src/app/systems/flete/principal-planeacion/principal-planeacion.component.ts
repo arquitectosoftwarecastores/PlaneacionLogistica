@@ -96,7 +96,6 @@ export class PrincipalPlaneacionComponent {
     const users = Array.from({ length: 5 }, (_, k) => createNewUser(k + 1));
     this.dataSource = new MatTableDataSource(users);
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
-    console.log(obtienePermisosG)
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
         this.permisoAInsertarAgregar = (obtienePermisosG['datos']['a'] == 1) ? 1 : 0;
@@ -127,18 +126,10 @@ export class PrincipalPlaneacionComponent {
     });
   }
   openDialog(): void {
-    const dialogRef = this.dialog.open(this.dialogTemplate);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
+    this.dialog.open(this.dialogTemplate);
   }
   openDialogPermisos(): void {
-    const dialogRol = this.dialog.open(this.dialogRoles);
-
-    dialogRol.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
-    });
+    this.dialog.open(this.dialogRoles);
   }
   oncloseDialog(): void {
     this.dialog.closeAll();

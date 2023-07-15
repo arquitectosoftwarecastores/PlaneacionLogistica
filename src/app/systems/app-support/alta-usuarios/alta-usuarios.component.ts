@@ -72,7 +72,6 @@ export class AltaUsuariosComponent {
     const dialogRef = this.dialog.open(this.dialogTemplate);
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
     });
   }
 
@@ -80,7 +79,6 @@ export class AltaUsuariosComponent {
     const dialogRol = this.dialog.open(this.dialogRoles);
 
     dialogRol.afterClosed().subscribe(result => {
-      console.log('El modal se ha cerrado');
     });
   }
 
