@@ -77,11 +77,11 @@ export class PrincipalPlaneacionComponent {
 
   displayedColumns: string[] = ['index', 'talon', 'talontipo', 'flete', 'cdp', 'bultos', 'contiene', 'volumen', 'noEconomico', 'origen', 'tipoVenta', 'destino'];
   dataSource: MatTableDataSource<fleteData>;
-  toppings = new FormControl('');
-  toppingList: string[] = ['opcion 1', 'opcion 2', 'opcion 3'];
+  toppings = new FormControl();
+  toppingList: string[] = ['Opción 1', 'Opción 2', 'Opción 3', 'Todos'];
   fleteFilter = new FormControl();
   cdpFilter = new FormControl();
-
+  allToppingsSelected = false;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
@@ -91,7 +91,7 @@ export class PrincipalPlaneacionComponent {
   constructor(public dialog: MatDialog, private authService: AuthService, public snackBar: MatSnackBar, private router: Router) {
     const SISTEMA: number = 14;
     const MODULO: number = 86;
-
+    this.toppings = new FormControl([]);
 
     const users = Array.from({ length: 5 }, (_, k) => createNewUser(k + 1));
     this.dataSource = new MatTableDataSource(users);
@@ -176,6 +176,25 @@ export class PrincipalPlaneacionComponent {
   }
   getColumnIndex(columnName: string): number {
     return this.displayedColumns.indexOf(columnName);
+  }
+
+
+
+  onSelectionChange(event: any) {
+    const allToppings = ['Opción 1', 'Opción 2', 'Opción 3','Todos'];
+
+    if (this.toppings.value.includes('Todos')) {
+      console.log(this.toppings.value.includes('Todos'));
+      this.allToppingsSelected = true;
+      this.toppings.setValue(allToppings);
+    } else {
+      this.allToppingsSelected = false;
+      console.log(this.toppings.value.includes('Todos'));
+      if(this.toppings.value.includes('Todos')==false){
+        this.allToppingsSelected = false;
+      }
+      this.toppings.setValue(allToppings);
+    }
   }
 }
 

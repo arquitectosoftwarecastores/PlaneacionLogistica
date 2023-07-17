@@ -13,8 +13,8 @@
   <div>
     <h5>Venta</h5>
     <mat-form-field>
-      <mat-select [formControl]="toppings" multiple>
-        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping}}</mat-option>
+      <mat-select [formControl]="toppings" multiple (selectionChange)="onSelectionChange($event)">
+        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping === 'Todos' ? 'Todos' : topping}}</mat-option>
       </mat-select>
     </mat-form-field>
   </div>
