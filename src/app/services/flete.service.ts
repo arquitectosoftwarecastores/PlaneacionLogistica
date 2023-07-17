@@ -13,17 +13,5 @@ import { AppsettingsComponent } from '../app-settings/appsettings.component'
 export class fletesService {
 
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
-  
-  getFleteOptimoFiltro(tipo: string[], venta: string[], origen: string, zonaInfluencia: string): Observable<flete_optimo[]> {
-    const url = `${this.appsettings.API_ENDPOINT}oficina/findAgenciaByIdOficina/${tipo}`;
-    return this.http.get<flete_optimo[]>(url).pipe(
-      catchError((error: HttpErrorResponse) => {
-        return throwError(error);
-      })
-    );
-}
 
-  getFleteOptimo(oficina: number):Observable<any>{
-    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `oficina/findAgenciaByIdOficina/${oficina}`);
-  }
 }
