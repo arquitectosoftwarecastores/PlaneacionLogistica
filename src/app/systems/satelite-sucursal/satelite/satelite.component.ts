@@ -13,6 +13,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
 import { satelite } from 'src/app/interfaces/satelite';
+import { Pipe, PipeTransform } from '@angular/core';
 export interface UserData {
   numero: string;
   personal: string;
@@ -109,6 +110,7 @@ export class SateliteComponent implements OnInit {
       }
     );
   }
+
   /**
     * obtenerPermisos: Funcion para obtener permisos y validar
     * @param fecha (string)
@@ -269,7 +271,7 @@ export class SateliteComponent implements OnInit {
     if (this.modo === 'agregar') {
       this.agregar = {
         idOficinaSatelite: sateliteSeleccionado.id,
-        idOficinaPertenece: sucursalSeleccionado.clave,
+        idOficinaPertenece: sucursalSeleccionado.id,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -288,7 +290,7 @@ export class SateliteComponent implements OnInit {
       this.modificar = {
         idSucursalSatelite: this.idOficinaSatelite,
         idOficinaSatelite: this.inputValue,
-        idOficinaPertenece: sucursalSeleccionado.clave === undefined ? this.defaultSatelite : sucursalSeleccionado.clave,
+        idOficinaPertenece: sucursalSeleccionado.id === undefined ? this.defaultSatelite : sucursalSeleccionado.id,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -370,8 +372,8 @@ export class SateliteComponent implements OnInit {
   }
 
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.clave;
-    return sucursal ? sucursal.plaza : '';
+    this.selectedSatelite = sucursal.id;
+    return sucursal ? sucursal.nombre : '';
   }
   displayFnSatelite(satelite: any): string {
     return satelite ? satelite.nombre.trim() : '';
@@ -400,7 +402,7 @@ export class SateliteComponent implements OnInit {
   }
 
   /**
-    * filtrarDatosSatelite: Funcion para el filtrado de las sucursales
+    * filtrarDatosSatelite: Funcion para el filtrado de los satelites
     *
     * @param fecha (string)
     * @return Date

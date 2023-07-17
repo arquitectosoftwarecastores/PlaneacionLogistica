@@ -79,11 +79,11 @@ export class FleteOptimoComponent implements AfterViewInit {
     const users = Array.from({ length: 100 }, (_, k) => createNewUser(k + 1));
     this.dataSource = new MatTableDataSource(users);
     this.cities = [
-      {name: 'New York', code: 'NY'},
-      {name: 'Rome', code: 'RM'},
-      {name: 'London', code: 'LDN'},
-      {name: 'Istanbul', code: 'IST'},
-      {name: 'Paris', code: 'PRS'}
+      {name: 'LEON', code: '1'},
+      {name: 'TORREON', code: '2'},
+      {name: 'SAN LUIS', code: '3'},
+      {name: 'TOLUCA', code: '4'},
+      {name: 'MORELIA', code: '5'}
   ];
     const SISTEMA: number = 14;
     const MODULO: number = 88;
@@ -144,9 +144,7 @@ export class FleteOptimoComponent implements AfterViewInit {
     }
   }
 
-  items = ['Carrots', 'Tomatoes', 'Onions', 'Apples', 'Avocados'];
-
-  basket = ['Oranges', 'Bananas', 'Cucumbers'];
+  items = ['', '', '', '', ''];
 
   drop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
@@ -168,30 +166,30 @@ function createNewUser(id: number): UserData {
     FLETE[Math.round(Math.random() * (FLETE.length - 1))] +
     ' ' +
     FLETE[Math.round(Math.random() * (FLETE.length - 1))].charAt(0) +
-    '.';
+    '';
 
   const cdp = CDP[Math.round(Math.random() * (CDP.length - 1))] +
     ' ' +
     CDP[Math.round(Math.random() * (CDP.length - 1))].charAt(0) +
-    '.';
+    '';
 
   const bultos = BULTOS[Math.round(Math.random() * (BULTOS.length - 1))] +
     ' ' +
     BULTOS[Math.round(Math.random() * (BULTOS.length - 1))].charAt(0) +
-    '.';
+    '';
   const contiene = CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))] +
     ' ' +
     CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))].charAt(0) +
-    '.';
+    '';
   const volumen = VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))] +
     ' ' +
     VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))].charAt(0) +
-    '.';
+    '';
 
   const origen = ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))] +
     ' ' +
     ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))].charAt(0) +
-    '.';
+    '';
 
   return {
     flete: flete,
