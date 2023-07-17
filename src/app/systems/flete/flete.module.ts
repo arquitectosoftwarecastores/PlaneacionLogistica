@@ -9,6 +9,8 @@ import { AngularMaterialModule } from 'src/app/angular-material.module';
 import { PrincipalPlaneacionComponent } from './principal-planeacion/principal-planeacion.component';
 import { ConsultaCorteComponent } from './consulta-corte/consulta-corte.component';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { HttpClientModule } from '@angular/common/http';
+import { fletesService } from 'src/app/services/flete.service';
 
 @NgModule({
   declarations: [FleteOptimoComponent,PrincipalPlaneacionComponent,ConsultaCorteComponent],
@@ -20,6 +22,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
     ReactiveFormsModule,
     AngularMaterialModule,
     MultiSelectModule
-  ]
+  ],
+  providers:[HttpClientModule, fletesService]
 })
 export class FleteModule { }

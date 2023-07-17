@@ -10,7 +10,7 @@ import { AppsettingsComponent } from '../app-settings/appsettings.component'
 
 
 @Injectable()
-export class fletesService {
+export class consultaCorteService {
 
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 

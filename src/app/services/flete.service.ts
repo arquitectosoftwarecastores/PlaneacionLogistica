@@ -14,4 +14,7 @@ export class fletesService {
 
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 
+  getFletesOptimo(){
+    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getAll`);
+  }
 }
