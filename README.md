@@ -6,7 +6,8 @@
 - __Author:__ Oswaldo Ramirez
 - __Fecha:__ 07/07/2023
 - __Descripción:__
-  - Se crea nuevo proyecto planeacion logistica, se agregan el funcionamiento del login, puestos y permisos.
+ - Se crea nuevo proyecto planeacion logistica, se agregan el funcionamiento del login, puestos y permisos, 
+ - tambien se agrega el modulo de satelite sucursal.
 
 --------
 # Configuración técnica
