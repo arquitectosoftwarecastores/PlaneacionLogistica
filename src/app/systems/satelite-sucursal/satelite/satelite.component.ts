@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, } from '@angular/material/dialog';
@@ -14,6 +14,7 @@ import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
 import { satelite } from 'src/app/interfaces/satelite';
 import { Pipe, PipeTransform } from '@angular/core';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 export interface UserData {
   numero: string;
   personal: string;
@@ -29,8 +30,11 @@ export interface UserData {
   selector: 'app-satelite',
   templateUrl: './satelite.component.html',
   styleUrls: ['./satelite.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
-export class SateliteComponent implements OnInit {
+export class SateliteComponent implements OnInit   {
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -64,7 +68,9 @@ export class SateliteComponent implements OnInit {
   placeholderText = '';
   placeholderSucursal = '';
   defaultSatelite = '';
-  isDisabled: boolean = false;
+  isDivBlocked: boolean = true;
+  agregar: any;
+  modificar: any;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -72,12 +78,10 @@ export class SateliteComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
   @ViewChild('dialogAgregar') dialogAgregar!: TemplateRef<any>;
-  @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
+  @ViewChild('tablaSateliteSort', { static: true }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
 
-  agregar: any;
-  modificar: any;
   constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
     public snackBar: MatSnackBar, private router: Router, private authService: AuthService,private oficinaService: oficinasService)
     {}
@@ -338,6 +342,7 @@ export class SateliteComponent implements OnInit {
     this.placeholderSucursal = '';
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
+    this.isDivBlocked=true;
     this.estatus=1;
     this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
     this.openDialog();
@@ -356,7 +361,7 @@ export class SateliteComponent implements OnInit {
     this.idOficinaSatelite = idSatelite;
     this.inputOficinaSatelite = true;
     this.inputSatelites = false;
-    this.isDisabled=false;
+    this.isDivBlocked=false
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
       this.inputValue = response.idOficinaSatelite;
       this.placeholderText = response.nombreSatelite;

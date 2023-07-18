@@ -1,6 +1,6 @@
 <br><br>
 <div>
-  <h1 id="tituloSatelitesSucursal">SATELITES SUCURSAL</h1>
+  <h1 id="tituloSatelitesSucursal">Satélite-Sucursal</h1>
 </div>
 
 <div id="fletes">
@@ -111,10 +111,10 @@
         </div>
         <div class="form-group" style="width: 100%;">
           <h3>Estatus</h3>
-          <div class="switch-group" style="font-size: 0.8em;">
+          <div class="switch-group" style="font-size: 0.8em;pointer-events: none;" [style.pointerEvents]="isDivBlocked ? 'none' : 'auto'">
             <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
             <label class="switch">
-              <input type="checkbox" [disabled]="true" name="estatus" id="estatusSatelite" formControlName="estatusSatelite"
+              <input type="checkbox" name="estatus" id="estatusSatelite" formControlName="estatusSatelite"
                 (change)="toggleCheckbox()">
               <span class="slider round"></span>
             </label>
