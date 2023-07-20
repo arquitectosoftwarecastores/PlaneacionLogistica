@@ -1,4 +1,3 @@
-
 export class OficinaActual {
   idOficina!: number;
   clave!: string;

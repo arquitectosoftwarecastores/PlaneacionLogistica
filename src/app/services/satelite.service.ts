@@ -3,10 +3,9 @@ import { Observable, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { sucursales_satelite } from '../interfaces/sucursales_satelite';
-
 import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { satelite } from '../interfaces/satelite';
+import { sucursales_satelite } from '../interfaces/sucursales_satelite';
 
 
 

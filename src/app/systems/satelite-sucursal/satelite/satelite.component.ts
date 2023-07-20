@@ -7,13 +7,13 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
-import { sucursales_satelite } from '../../../interfaces/sucursales_satelite';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
-import { satelite } from 'src/app/interfaces/satelite';
 import { Pipe, PipeTransform } from '@angular/core';
+import { sucursales_satelite } from 'src/app/interfaces/sucursales_satelite';
+import { satelite } from 'src/app/interfaces/satelite';
+import { Oficina } from 'src/app/interfaces/oficina';
 export interface UserData {
   numero: string;
   personal: string;

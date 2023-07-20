@@ -1,5 +1,4 @@
-
-export class Oficina {
-  id!: number;
-  nombre!: string;
+export interface Oficina {
+  id: number;
+  nombre: string;
 }

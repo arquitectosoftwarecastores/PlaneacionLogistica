@@ -426,8 +426,16 @@ label:focus,
 .filtroFecha h5 {
   margin-left: 5px;
 }
+.filtroFecha .mat-mdc-form-field{
+  height: 68px;
+  margin-left: 5px;
+  width: 280px !important;
+}
 
-
+.filtroFecha .mdc-text-field--no-label:not(.mdc-text-field--textarea) .mat-mdc-form-field-input-control.mdc-text-field__input, .mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control{
+  width: 100%;
+  color: black;
+}
 #datosFlete {
   width: 100%;
   min-width: 300px;

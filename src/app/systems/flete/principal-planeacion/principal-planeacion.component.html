@@ -5,24 +5,46 @@
 <br><br>
 <div class="filtroFecha">
   <h5>Fecha inicio</h5>
-  <input type="date" class="form-control" name="" id="">
+  <mat-form-field>
+    <input matInput [matDatepicker]="inicio" placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter"
+      disabled>
+    <mat-datepicker-toggle matSuffix [for]="inicio"></mat-datepicker-toggle>
+    <mat-datepicker #inicio disabled="false"></mat-datepicker>
+  </mat-form-field>
+
   <h5>Fecha fin</h5>
-  <input type="date" class="form-control">
+  <mat-form-field>
+    <input matInput [matDatepicker]="fin" placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter"
+      disabled>
+    <mat-datepicker-toggle matSuffix [for]="fin"></mat-datepicker-toggle>
+    <mat-datepicker #fin disabled="false"></mat-datepicker>
+  </mat-form-field>
 </div>
 <div class="filtrofleteSelect">
   <div>
     <h5>Venta</h5>
     <mat-form-field>
-      <mat-select [formControl]="toppings" multiple (selectionChange)="onSelectionChange($event)">
-        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping === 'Todos' ? 'Todos' : topping}}</mat-option>
+      <mat-select [formControl]="venta" multiple>
+        <mat-option (click)="seleccionarTodosVenta()" [value]="ventasSeleccionados ? [] : ventaList">
+          {{ ventasSeleccionados ? 'Ninguno' : 'Todos' }}
+        </mat-option>
+        <mat-option *ngFor="let topping of ventaList" [value]="topping">
+          {{topping}}
+        </mat-option>
       </mat-select>
     </mat-form-field>
+
   </div>
   <div>
     <h5>Tipo</h5>
     <mat-form-field>
-      <mat-select [formControl]="toppings" multiple>
-        <mat-option *ngFor="let topping of toppingList" [value]="topping">{{topping}}</mat-option>
+      <mat-select [formControl]="tipo" multiple>
+        <mat-option (click)="seleccionarTodosTipo()" [value]="tiposSeleccionados ? [] : tipoList">
+          {{ tiposSeleccionados ? 'Ninguno' : 'Todos' }}
+        </mat-option>
+        <mat-option *ngFor="let topping of tipoList" [value]="topping">
+          {{topping}}
+        </mat-option>
       </mat-select>
     </mat-form-field>
   </div>
@@ -37,7 +59,8 @@
 </div>
 <div id="fletes">
   <div class="botonesFiltro">
-    <button id="agregar" type="button" class="btn btn-primary" *ngIf="permisoAInsertarAgregar == 1">Agregar corte</button>
+    <button id="agregar" type="button" class="btn btn-primary" *ngIf="permisoAInsertarAgregar == 1">Agregar
+      corte</button>
     <button id="Buscar" type="button" class="btn btn-primary">Buscar</button>
     <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
   </div>

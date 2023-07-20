@@ -1,4 +1,4 @@
-export class satelite {
-  id!: number;
-  nombre!: string;
+export interface satelite {
+  id: number;
+  nombre: string;
 }
