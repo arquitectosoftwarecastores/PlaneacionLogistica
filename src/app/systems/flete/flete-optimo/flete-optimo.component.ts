@@ -86,7 +86,7 @@ export class FleteOptimoComponent implements AfterViewInit {
       {name: 'MORELIA', code: '5'}
   ];
     const SISTEMA: number = 14;
-    const MODULO: number = 88;
+    const MODULO: number = 80;
 
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {

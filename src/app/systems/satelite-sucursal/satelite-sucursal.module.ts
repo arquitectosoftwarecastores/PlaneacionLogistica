@@ -21,6 +21,6 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
   ],
   declarations: [SateliteComponent],
   exports:[],
-  providers:[HttpClientModule,AuthService,sateliteService, oficinasService]
+  providers:[HttpClientModule,AuthService,sateliteService, oficinasService, sateliteService]
 })
 export class SateliteSucursalModule { }

@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, } from '@angular/material/dialog';
@@ -13,7 +13,8 @@ import { forkJoin } from 'rxjs';
 import { Pipe, PipeTransform } from '@angular/core';
 import { sucursales_satelite } from 'src/app/interfaces/sucursales_satelite';
 import { satelite } from 'src/app/interfaces/satelite';
-import { Oficina } from 'src/app/interfaces/oficina';
+import { cedis } from 'src/app/interfaces/oficina';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 export interface UserData {
   numero: string;
   personal: string;
@@ -29,6 +30,9 @@ export interface UserData {
   selector: 'app-satelite',
   templateUrl: './satelite.component.html',
   styleUrls: ['./satelite.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
 export class SateliteComponent implements OnInit {
   public permisoAInsertarAgregar: any = 0;
@@ -51,7 +55,7 @@ export class SateliteComponent implements OnInit {
   modo: string = 'agregar';
   idOficinaSatelite!: number;
   displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idOficinaSatelite'];
-  sucursales: Oficina[] = [];
+  sucursales: cedis[] = [];
   satelites: satelite[] = [];
   selectedSucursal: any;
   selectedSatelite: any;
@@ -65,6 +69,7 @@ export class SateliteComponent implements OnInit {
   placeholderSucursal = '';
   defaultSatelite = '';
   isDisabled: boolean = false;
+
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -121,7 +126,7 @@ export class SateliteComponent implements OnInit {
 
   obtenerPermisos(){
     const SISTEMA: number = 14;
-    const MODULO: number = 90;
+    const MODULO: number = 82;
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
 
     if (obtienePermisosG != undefined) {

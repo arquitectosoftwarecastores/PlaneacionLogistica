@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { AppsettingsComponent } from '../app-settings/appsettings.component'
-import { Oficina } from '../interfaces/oficina';
+import { cedis } from '../interfaces/oficina';
+import { oficinas } from '../interfaces/oficina';
+import { zonasInfluencia } from '../interfaces/zonasInfluencia';
 
 
 
@@ -13,7 +15,15 @@ export class oficinasService {
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 
   getOficinas(){
-    return this.http.get<Oficina[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasCedis`);
+    return this.http.get<cedis[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasCedis`);
+  }
+
+  getOficina(clave:number) {
+    return this.http.get<oficinas>(this.appsettings.API_ENDPOINT + `oficina/findOficinaByClave/`+clave);
+  }
+
+  getZonasInfluencia(){
+    return this.http.get<zonasInfluencia[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getZonasInfluencia`);
   }
 
 }

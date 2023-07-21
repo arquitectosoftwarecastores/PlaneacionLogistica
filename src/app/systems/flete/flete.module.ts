@@ -11,6 +11,8 @@ import { ConsultaCorteComponent } from './consulta-corte/consulta-corte.componen
 import { MultiSelectModule } from 'primeng/multiselect';
 import { HttpClientModule } from '@angular/common/http';
 import { fletesService } from 'src/app/services/flete.service';
+import { oficinasService } from 'src/app/services/oficinas.service';
+import { sateliteService } from 'src/app/services/satelite.service';
 
 @NgModule({
   declarations: [FleteOptimoComponent,PrincipalPlaneacionComponent,ConsultaCorteComponent],
@@ -23,6 +25,6 @@ import { fletesService } from 'src/app/services/flete.service';
     AngularMaterialModule,
     MultiSelectModule
   ],
-  providers:[HttpClientModule, fletesService]
+  providers:[HttpClientModule, fletesService,oficinasService, sateliteService]
 })
 export class FleteModule { }

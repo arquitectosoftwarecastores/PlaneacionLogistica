@@ -80,7 +80,7 @@ export class ConsultaCorteComponent {
     this.dataSource = new MatTableDataSource(users);
 
     const SISTEMA: number = 14;
-    const MODULO: number = 87;
+    const MODULO: number = 79;
 
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {

@@ -14,7 +14,7 @@ export const fletesRoutes: Routes = [
         canActivate: [AuthGuard,RoleGuard],
         data: {
           sistema: 14,
-          modulo: 88
+          modulo: 80
         }
       },
       {
@@ -23,7 +23,7 @@ export const fletesRoutes: Routes = [
         canActivate: [AuthGuard,RoleGuard],
         data: {
           sistema: 14,
-          modulo: 88
+          modulo: 78
         }
       },
       {
@@ -32,7 +32,7 @@ export const fletesRoutes: Routes = [
         canActivate: [AuthGuard,RoleGuard],
         data: {
           sistema: 14,
-          modulo: 87
+          modulo: 79
         }
       }
 ];

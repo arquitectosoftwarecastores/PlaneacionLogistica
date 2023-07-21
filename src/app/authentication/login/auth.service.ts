@@ -143,6 +143,10 @@ export class AuthService {
     }
 
   }
+
+  getOficina(){
+    return this._usuario.claveOficina;
+  }
   guardarToken(accesstoken: string): void {
     this._token = accesstoken;
     sessionStorage.setItem('token', accesstoken);
