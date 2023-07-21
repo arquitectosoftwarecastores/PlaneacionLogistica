@@ -1,70 +1,33 @@
 
 import { AfterViewInit, Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSelectModule } from '@angular/material/select';
-import { NgFor } from '@angular/common';
 import {
-  CdkDrag,
   CdkDragDrop,
-  CdkDropList,
-  CdkDropListGroup,
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-
-
-export interface fleteData {
-  flete: string;
-  cdp: string;
-  bultos: string;
-  contiene: string;
-  volumen: string;
-  origen: string;
-  destino: string;
-}
-
-/** Constants used to fill up our data base. */
-const FLETE: string[] = [
-  ' ',
-];
-
-const CDP: string[] = [
-  ' ',
-];
-const BULTOS: string[] = [
-  ' ',
-];
-const CONTIENE: string[] = [
-  ' ',
-];
-
-const VOLUMEN: string[] = [
-  ' ',
-];
-const ORIGEN: string[] = [
-  ' ',
-];
-
-const DESTINO: string[] = [
-  ' ',
-];
+import { cedis } from 'src/app/interfaces/oficina';
+import { oficinasService } from 'src/app/services/oficinas.service';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
+import { sateliteService } from '../../../services/satelite.service';
+import { forkJoin } from 'rxjs';
+import { zonasInfluencia } from 'src/app/interfaces/zonasInfluencia';
 
 
 @Component({
   selector: 'app-principal-planeacion',
   templateUrl: './principal-planeacion.component.html',
   styleUrls: ['./principal-planeacion.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
 export class PrincipalPlaneacionComponent {
   minDate: Date = new Date();
@@ -80,15 +43,39 @@ export class PrincipalPlaneacionComponent {
   private permisoFRechazar: any = 0;
   private permisoHDescargar: any = 0;
   private permisoIImprimir: any = 0;
+  public formGroupFiltro: any;
+  private oficinaResponse: any;
 
   displayedColumns: string[] = ['index', 'talon', 'talontipo', 'flete', 'cdp', 'bultos', 'contiene', 'volumen', 'noEconomico', 'origen', 'tipoVenta', 'destino'];
-  dataSource!: MatTableDataSource<fleteData>;
+  //dataSource!: MatTableDataSource<fleteData>;
   venta = new FormControl();
   tipo = new FormControl();
-  ventaList= ['Local', 'Agencia', 'Satelite'];
-  tipoList= ['Piso', 'Virtual'];
+  ventaList= [
+  { nombre: 'Local', valor: 1 },
+  { nombre: 'Agencia', valor: 2 },
+  { nombre: 'Satelite', valor: 3 }
+  ];
+  tipoList= [
+    { nombre: 'Piso', valor: 'P' },
+    { nombre: 'Virtual', valor: 'V' },
+  ];
   fleteFilter = new FormControl();
   cdpFilter = new FormControl();
+
+  filteredSucursales: any[] = [];
+  filteredZonas: any[] = [];
+  cedis: cedis[] = [];
+  zonasInfluencia: zonasInfluencia[] = [];
+  selectedSatelite: any;
+  selectedZonasInfluencia: any;
+  placeholderSucursal = 'Zona';
+  inputValue!:number;
+  inputValueLocal='';
+  placeholderText = '';
+  placeholderTextLocal = '';
+  disabledCedis = false;
+  inputCedis = true;
+  idCedisLocal!:number;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -96,9 +83,32 @@ export class PrincipalPlaneacionComponent {
   @ViewChild('dialogRoles') dialogRoles!: TemplateRef<any>;
   Flete: any;
   dateFilter:any;
-  constructor(public dialog: MatDialog, private authService: AuthService, public snackBar: MatSnackBar, private router: Router) {
+  constructor(public dialog: MatDialog, private authService: AuthService, public snackBar: MatSnackBar, private router: Router,
+              private formBuilder: FormBuilder,private oficinaService: oficinasService,private sateliteService: sateliteService,
+              private oficinasService:oficinasService) {
+
+  }
+
+  ngOnInit(): void {
     const SISTEMA: number = 14;
-    const MODULO: number = 86;
+    const MODULO: number = 78;
+
+    this.formGroupFiltro = new FormGroup({
+      idCedis: new FormControl(),
+      idCedisLocal: new FormControl(),
+      idZona:new FormControl()
+    });
+    this.formGroupFiltro = this.formBuilder.group({
+      idCedis: [null, Validators.compose([Validators.required])],
+      idZona: [null, Validators.compose([Validators.required])],
+      idCedisLocal: [null, Validators.compose([Validators.required])]
+    });
+    this.formGroupFiltro = this.formBuilder.group({
+      idCedis: '',
+      idZona:'',
+      idCedisLocal:{ value: ' ', disabled: true }
+    });
+
     this.dateFilter = (date: Date | null): boolean => {
       const today = new Date();
       const yesterday = new Date(today);
@@ -107,7 +117,25 @@ export class PrincipalPlaneacionComponent {
       // Permite las fechas dentro del rango entre ayer y hoy
       return date! >= yesterday && date! <= today;
     }
+
+
     this.fechaInicio();
+    let oficinaUsuario =this.authService.getOficina();
+    console.log("usuario:")
+    console.log(oficinaUsuario);
+    if(oficinaUsuario=='1100'){
+        this.inputValue = Number("1100");
+        this.placeholderText = "CORPORATIVO";
+        this.inputCedis = true;
+    }else{
+      this.oficinasService.getOficina(Number(oficinaUsuario)).subscribe(response => {
+        this.inputValueLocal = response.plaza.toLocaleUpperCase();
+        this.inputCedis = false;
+      }, (error: any) => {
+        this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
+      });
+    }
+
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
@@ -131,6 +159,16 @@ export class PrincipalPlaneacionComponent {
       this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔',3000);
       this.router.navigate(['/home/inicio']);
     }
+
+    forkJoin([ this.oficinaService.getOficinas(), this.oficinaService.getZonasInfluencia()]).subscribe(
+      ([cedis, zonasInfluencia]) => {
+        this.cedis = cedis;
+        this.zonasInfluencia = zonasInfluencia;
+      },
+      (error) => {
+        this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
+      }
+    );
 
   }
   ventasSeleccionados = false;
@@ -189,11 +227,23 @@ export class PrincipalPlaneacionComponent {
 
         // Deshabilitar las fechas que no son hoy ni ayer
         if (selectedDateFormatted !== fechaHoyFormatted && selectedDateFormatted !== fechaAyerFormatted) {
-          (fechaInput as HTMLInputElement).value = ''; // Restablecer el valor del input
+          (fechaInput as HTMLInputElement).value = '';
         }
       });
     });
   }
+
+  onInputSucursales(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const query = inputElement.value;
+    this.filteredSucursales = this.filtrarDatosCedis(query);
+  }
+  onInputZonas(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const query = inputElement.value;
+    this.filteredZonas = this.filtrarDatosZonasInfluencia(query);
+  }
+
 
   formatDate(date:any) {
     const year = date.getFullYear();
@@ -214,30 +264,15 @@ export class PrincipalPlaneacionComponent {
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+
   }
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
   }
   applyFilter1(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
   }
-
-  items = ['Carrots', 'Tomatoes', 'Onions', 'Apples', 'Avocados'];
-
-  basket = ['Oranges', 'Bananas', 'Cucumbers'];
 
   drop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
@@ -254,50 +289,45 @@ export class PrincipalPlaneacionComponent {
   getColumnIndex(columnName: string): number {
     return this.displayedColumns.indexOf(columnName);
   }
-}
 
-function createNewUser(id: number): fleteData {
-  const flete =
-    FLETE[Math.round(Math.random() * (FLETE.length - 1))] +
-    ' ' +
-    FLETE[Math.round(Math.random() * (FLETE.length - 1))].charAt(0) +
-    '.';
+  displayFn(sucursal: any): string {
+    this.selectedSatelite = sucursal.id;
+    return sucursal ? sucursal.nombre : '';
+  }
+  displayFnZonas(zona: any): string {
+    this.selectedZonasInfluencia = zona.idZona;
+    return zona ? zona.nombre : '';
+  }
 
-  const cdp = CDP[Math.round(Math.random() * (CDP.length - 1))] +
-    ' ' +
-    CDP[Math.round(Math.random() * (CDP.length - 1))].charAt(0) +
-    '.';
+  filtrarDatosCedis(query: string): any[] {
+    let filtered: any[] = [];
+    if (query) {
+      const lowercaseQuery = query.toLowerCase();
+      filtered = this.cedis.filter((sucursal) =>
+        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+      );
+    } else {
+      filtered = this.cedis;
+    }
+    return filtered;
+  }
+  filtrarDatosZonasInfluencia(query: string): any[] {
+    let filtered: any[] = [];
+    if (query) {
+      const lowercaseQuery = query.toLowerCase();
+      filtered = this.zonasInfluencia.filter((zona) =>
+        zona.nombre.toLowerCase().includes(lowercaseQuery)
+      );
+    } else {
+      filtered = this.zonasInfluencia;
+    }
+    return filtered;
+  }
 
-  const bultos = BULTOS[Math.round(Math.random() * (BULTOS.length - 1))] +
-    ' ' +
-    BULTOS[Math.round(Math.random() * (BULTOS.length - 1))].charAt(0) +
-    '.';
-  const contiene = CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))] +
-    ' ' +
-    CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))].charAt(0) +
-    '.';
-  const volumen = VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))] +
-    ' ' +
-    VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))].charAt(0) +
-    '.';
+  buscar(){
 
-  const origen = ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))] +
-    ' ' +
-    ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))].charAt(0) +
-    '.';
-  const destino = DESTINO[Math.round(Math.random() * (DESTINO.length - 1))] +
-    ' ' +
-    DESTINO[Math.round(Math.random() * (DESTINO.length - 1))].charAt(0) +
-    '.';
-  return {
-    flete: flete,
-    cdp: cdp,
-    bultos: bultos,
-    contiene: contiene,
-    volumen: volumen,
-    origen: origen,
-    destino: destino
-  };
+  }
 
 }
+
 
