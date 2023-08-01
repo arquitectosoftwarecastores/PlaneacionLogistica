@@ -39,10 +39,13 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { CdkDrag, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { CdkTableModule } from '@angular/cdk/table';
 
 
 const materialModules = [
   MatPaginatorModule,
+  CdkTreeModule,
+  CdkTableModule,
   CdkTreeModule,
   CdkDropListGroup,
   CdkDropList,

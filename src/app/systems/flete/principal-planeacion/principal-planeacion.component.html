@@ -9,16 +9,17 @@
     <div class="filtroFecha">
       <h5>Fecha inicio</h5>
       <mat-form-field>
-        <input matInput [matDatepicker]="inicio" placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter"
-          disabled>
+        <input matInput [matDatepicker]="inicio" class="form-control sucursal" id="fechaInicio"
+          formControlName="fechaInicio" placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter"
+          [disabled]="true">
         <mat-datepicker-toggle matSuffix [for]="inicio"></mat-datepicker-toggle>
-        <mat-datepicker #inicio disabled="false"></mat-datepicker>
+        <mat-datepicker #inicio disabled="false" (dateChange)="onFechaInicioChange($event)"></mat-datepicker>
       </mat-form-field>
 
       <h5>Fecha fin</h5>
       <mat-form-field>
-        <input matInput [matDatepicker]="fin" placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter"
-          disabled>
+        <input matInput [matDatepicker]="fin" class="form-control sucursal" id="fechaFin" formControlName="fechaFin"
+          placeholder="Seleccione una fecha" [matDatepickerFilter]="dateFilter" [disabled]="true">
         <mat-datepicker-toggle matSuffix [for]="fin"></mat-datepicker-toggle>
         <mat-datepicker #fin disabled="false"></mat-datepicker>
       </mat-form-field>
@@ -27,11 +28,11 @@
       <div>
         <h5>Venta</h5>
         <mat-form-field>
-          <mat-select [formControl]="venta" multiple>
-            <mat-option (click)="seleccionarTodosVenta()" [value]="ventasSeleccionados ? [] : ventaList">
+          <mat-select [formControl]="venta" multiple >
+            <mat-option (click)="seleccionarTodosVenta()" [value]="ventasSeleccionados ? [] : ventaList" >
               {{ ventasSeleccionados ? 'Ninguno' : 'Todos' }}
             </mat-option>
-            <mat-option *ngFor="let ventas of ventaList" [value]="ventas">
+            <mat-option *ngFor="let ventas of ventaList" [value]="ventas" (click)="onVentaSelectionChange()">
               {{ventas.nombre}}
             </mat-option>
           </mat-select>
@@ -41,12 +42,12 @@
       <div>
         <h5>Tipo</h5>
         <mat-form-field>
-          <mat-select [formControl]="tipo" multiple>
+          <mat-select [formControl]="tipo" multiple >
             <mat-option (click)="seleccionarTodosTipo()" [value]="tiposSeleccionados ? [] : tipoList">
               {{ tiposSeleccionados ? 'Ninguno' : 'Todos' }}
             </mat-option>
-            <mat-option *ngFor="let Tipos of tipoList" [value]="Tipos">
-              {{Tipos.nombre}}
+            <mat-option *ngFor="let tipo of tipoList" [value]="tipo" (click)="bloquearOpcionPiso()">
+              {{tipo.nombre}}
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -54,11 +55,12 @@
       <div>
         <h5>Origen</h5>
         <mat-form-field *ngIf="inputCedis==false">
-          <input matInput type="text"  class="form-control" id="idCedisLocal" formControlName="idCedisLocal" [value]="inputValueLocal" [placeholder]="placeholderTextLocal" [disabled]="true">
+          <input matInput type="text" class="form-control" id="idCedisLocal" formControlName="idCedisLocal"
+            [value]="inputValueLocal" [placeholder]="placeholderTextLocal" [disabled]="true">
         </mat-form-field>
         <mat-form-field *ngIf="inputCedis">
-          <input matInput type="text" class="form-control sucursal" id="idCedis"
-            formControlName="idCedis" [value]="inputValue" [placeholder]="placeholderText" [matAutocomplete]="origen"
+          <input matInput type="text" class="form-control sucursal" id="idCedis" formControlName="idCedis"
+            [value]="inputValue" [placeholder]="placeholderText" [matAutocomplete]="origen"
             (input)="onInputSucursales($event)">
           <mat-autocomplete #origen [displayWith]="displayFn">
             <mat-option *ngFor="let cedis of filteredSucursales" [value]="cedis">
@@ -70,11 +72,10 @@
       <div>
         <h5>Zona de influencia</h5>
         <mat-form-field>
-          <input matInput type="text" class="form-control sucursal" id="idZona"
-            formControlName="idZona" [placeholder]='placeholderSucursal' [matAutocomplete]="zona"
-            placeholder="Buscar por nombre" (input)="onInputZonas($event)">
+          <input matInput type="text" class="form-control sucursal" id="zona" formControlName="zona"
+            [placeholder]="placeholderSucursal" [matAutocomplete]="zona" (input)="onInputZonas($event)">
           <mat-autocomplete #zona [displayWith]="displayFnZonas">
-            <mat-option *ngFor="let zonas of filteredZonas" [value]="zonasInfluencia">
+            <mat-option *ngFor="let zonas of filteredZonas" [value]="zonas">
               {{ zonas.nombre }}
             </mat-option>
           </mat-autocomplete>
@@ -83,163 +84,204 @@
     </div>
     <div id="fletes">
       <div class="botonesFiltro">
-        <button id="agregar" type="button" class="btn btn-primary" *ngIf="permisoAInsertarAgregar == 1">Agregar
+        <button id="agregar" type="button" class="btn btn-primary" (click)="openDialog();"
+          *ngIf="permisoAInsertarAgregar == 1 && mostrarBoton">Agregar
           corte</button>
         <button id="Buscar" type="button" class="btn btn-primary" (click)="buscar();">Buscar</button>
         <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
       </div>
     </div>
   </form>
-
 </div>
+
+
+
+
 
 
 <div class="felteOptimo">
   <section class="example-container mat-elevation-z8" tabindex="0">
-    <table mat-table matSort class="table table-striped">
+    <table mat-table class="table table-striped" [dataSource]="dataSource" matSort #tablaPlaneacionSort="matSort">
       <ng-container matColumnDef="index">
         <th mat-header-cell *matHeaderCellDef> </th>
-        <td mat-cell *matCellDef="let element; let i = index;">{{i}}</td>
+        <td mat-cell *matCellDef="let element; let i = index;">{{i+1}}</td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef></td>
       </ng-container>
-      <ng-container matColumnDef="talon">
+      <ng-container matColumnDef="claTalon">
         <th mat-header-cell *matHeaderCellDef> #Talón
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="numeroTalonFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> </td>
+        <td mat-cell *matCellDef="let row">{{row.claTalon }} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef></td>
       </ng-container>
-      <ng-container matColumnDef="talontipo">
-        <th mat-header-cell *matHeaderCellDef> Talón tipo
+      <ng-container matColumnDef="tipoTalon">
+        <th mat-header-cell *matHeaderCellDef> Tipo talon
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="tipoTalonFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> </td>
+        <td mat-cell *matCellDef="let row">{{row.tipoTalon}} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef>Sumatoria:</td>
       </ng-container>
       <ng-container matColumnDef="flete">
         <th mat-header-cell *matHeaderCellDef> Flete
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="fleteFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.flete}} </td>
+        <td mat-cell *matCellDef="let row">{{row.flete }} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('flete')=== 0 ? ' ' : calcularSumatoria('flete')}}
+        </td>
       </ng-container>
       <ng-container matColumnDef="cdp">
         <th mat-header-cell *matHeaderCellDef> CDP
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="cdpFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.cdp}}% </td>
+        <td mat-cell *matCellDef="let row">{{row.cdp }} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('cdp')=== 0 ? ' ' : calcularSumatoria('cdp')}} </td>
       </ng-container>
-      <ng-container matColumnDef="bultos">
+      <ng-container matColumnDef="bulto">
         <th mat-header-cell *matHeaderCellDef> Bultos
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="bultosFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.bultos}} </td>
-      </ng-container>
-      <ng-container matColumnDef="contiene">
-        <th mat-header-cell *matHeaderCellDef> Volumen(m3)
-          <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
-          </div>
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.contiene}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.bulto }} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('bulto') === 0 ? ' ' : calcularSumatoria('bulto')}}
+        </td>
       </ng-container>
       <ng-container matColumnDef="volumen">
-        <th mat-header-cell *matHeaderCellDef> Que contiene
+        <th mat-header-cell *matHeaderCellDef> Volumen
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="valumenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.volumen}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.volumen }} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('volumen')=== 0 ? ' ' : calcularSumatoria('volumen')
+          }} </td>
       </ng-container>
-      <ng-container matColumnDef="noEconomico">
-        <th mat-header-cell *matHeaderCellDef> Unidad
+      <ng-container matColumnDef="queContiene">
+        <th mat-header-cell *matHeaderCellDef> Contiene
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="contieneFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> </td>
+        <td mat-cell *matCellDef="let row"> {{row.queContiene }} </td>
       </ng-container>
       <ng-container matColumnDef="origen">
         <th mat-header-cell *matHeaderCellDef> Origen
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="origenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.origen}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.origen }} </td>
       </ng-container>
-      <ng-container matColumnDef="tipoVenta">
-        <th mat-header-cell *matHeaderCellDef> Tipo Guia
+      <ng-container matColumnDef="tipo">
+        <th mat-header-cell *matHeaderCellDef> Tipo
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="tipoFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> </td>
+        <td mat-cell *matCellDef="let row"> {{row.tipo }}</td>
+      </ng-container>
+      <ng-container matColumnDef="venta">
+        <th mat-header-cell *matHeaderCellDef> Venta
+          <div>
+            <input type="text" class="form-control" [formControl]="ventaFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.venta }} </td>
       </ng-container>
       <ng-container matColumnDef="destino">
         <th mat-header-cell *matHeaderCellDef> Destino
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="destinoFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row">{{row.destino}}</td>
+        <td mat-cell *matCellDef="let row">{{row.destino }}</td>
       </ng-container>
+      <ng-container matColumnDef="noGuia">
+        <th mat-header-cell *matHeaderCellDef> NoGuia
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row">{{row.noGuia}}</td>
+      </ng-container>
+      <ng-container matColumnDef="tipoGuia">
+        <th mat-header-cell *matHeaderCellDef> Tipo guia
+          <div>
+            <input type="text" class="form-control" [formControl]="tipoGuiaFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row">{{row.tipoGuia}}</td>
+      </ng-container>
+      <ng-container matColumnDef="noEconomico">
+        <th mat-header-cell *matHeaderCellDef> Unidad
+          <div>
+            <input type="text" class="form-control" [formControl]="noEconomicoFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter();">
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row">{{row.noEconomico}}</td>
+      </ng-container>
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef> fecha
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1">
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let row">{{row.fecha }}</td>
+      </ng-container>
+
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-footer-row *matFooterRowDef="['index','claTalon','tipoTalon','flete','cdp','bulto','volumen']"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      <tr class="mat-row" *matNoDataRow>
-        <td class="mat-cell" colspan="6">No existe</td>
-      </tr>
+
     </table>
   </section>
   <br>
-  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
 
-  <ng-template #dialogTemplate>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users">
+  </mat-paginator>
+</div>
+
+
+
+<ng-template #dialogCorte>
+  <form id="formGroupCorte" name="formGroupCorte" style="display: contents;" method="post" [formGroup]="formGroupCorte">
     <div id="datosUsuario">
       <div id="datosUsuarioBox">
-        <h1>Alta usuario</h1>
-        <div id="personal">
-          <h3>Personal</h3>
-          <input type="text" class="form-control"><span class="input-group-text"
-            id="basic-addon1"><mat-icon>search</mat-icon></span>
-        </div>
-        <div id="usuario">
-          <h3>Usuario</h3>
-          <input type="text" class="form-control">
-          <h3>Contraseña</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div id="pregunta">
-          <h3>Pregunta</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div id="respuesta">
-          <h3>Respuesta</h3>
-          <input type="text" class="form-control">
+        <h1>Guardar Corte</h1>
+        <mat-divider></mat-divider>
+        <div id="personal" style="display: block;">
+          <h2>Acción:</h2>
+          <textarea class="form-control" id="descripcionCorte" formControlName="descripcionCorte" cols="70"
+            rows="10"></textarea>
         </div>
       </div>
     </div>
     <div id="botones">
-      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="submit" class="btn btn-primary" (click)="guardarCorte()">Guardar</button>
       <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
     </div>
-    <br>
-  </ng-template>
-
-</div>
+  </form>
+  <br>
+</ng-template>

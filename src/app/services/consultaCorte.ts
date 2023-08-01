@@ -14,5 +14,17 @@ export class consultaCorteService {
 
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 
-
+  setCorte(corte:any){
+      return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/create/`, corte)
+      .pipe(
+        catchError(e => {
+          if (e.error.message) {
+            console.error(e.error.message);
+          }
+          return throwError(e);
+        }
+      )
+    );
+  }
 }
+

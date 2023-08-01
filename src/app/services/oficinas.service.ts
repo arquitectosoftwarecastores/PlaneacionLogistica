@@ -18,7 +18,7 @@ export class oficinasService {
     return this.http.get<cedis[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasCedis`);
   }
 
-  getOficina(clave:number) {
+  getOficina(clave:String) {
     return this.http.get<oficinas>(this.appsettings.API_ENDPOINT + `oficina/findOficinaByClave/`+clave);
   }
 

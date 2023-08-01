@@ -69,7 +69,7 @@ export class SateliteComponent implements OnInit {
   placeholderSucursal = '';
   defaultSatelite = '';
   isDisabled: boolean = false;
-
+  isDivBlocked: boolean = true;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -105,6 +105,9 @@ export class SateliteComponent implements OnInit {
       estatusSatelite: '',
       idoficinaSatelite: { value: '', disabled: true }
     });
+    this.cargarSatelitesSucursales();
+  }
+  cargarSatelitesSucursales(){
     forkJoin([this.oficinaService.getOficinas(), this.sateliteService.getSatelitesFaltantes()]).subscribe(
       ([oficinas, satelite]) => {
         this.sucursales = oficinas;
@@ -115,7 +118,6 @@ export class SateliteComponent implements OnInit {
       }
     );
   }
-
   /**
     * obtenerPermisos: Funcion para obtener permisos y validar
     * @param fecha (string)
@@ -286,6 +288,7 @@ export class SateliteComponent implements OnInit {
       this.sateliteService.setSatelite(this.agregar).subscribe(
         (success: any) => {
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
+          this.cargarSatelitesSucursales();
           this.cargarDatos();
         },
         (error: any) => {
@@ -305,6 +308,7 @@ export class SateliteComponent implements OnInit {
       this.sateliteService.updateSatelite(this.modificar).subscribe(
         (success: any) => {
           this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
+          this.cargarSatelitesSucursales();
           this.cargarDatos();
         },
         (error: any) => {
@@ -344,6 +348,7 @@ export class SateliteComponent implements OnInit {
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
     this.estatus=1;
+    this.isDivBlocked=true;
     this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
     this.openDialog();
   }
@@ -362,6 +367,7 @@ export class SateliteComponent implements OnInit {
     this.inputOficinaSatelite = true;
     this.inputSatelites = false;
     this.isDisabled=false;
+    this.isDivBlocked=false
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
       this.inputValue = response.idOficinaSatelite;
       this.placeholderText = response.nombreSatelite;

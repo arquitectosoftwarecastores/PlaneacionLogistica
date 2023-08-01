@@ -13,6 +13,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { fletesService } from 'src/app/services/flete.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { sateliteService } from 'src/app/services/satelite.service';
+import { consultaCorteService } from 'src/app/services/consultaCorte';
 
 @NgModule({
   declarations: [FleteOptimoComponent,PrincipalPlaneacionComponent,ConsultaCorteComponent],
@@ -23,8 +24,8 @@ import { sateliteService } from 'src/app/services/satelite.service';
     FormsModule,
     ReactiveFormsModule,
     AngularMaterialModule,
-    MultiSelectModule
+    MultiSelectModule,
   ],
-  providers:[HttpClientModule, fletesService,oficinasService, sateliteService]
+  providers:[HttpClientModule, fletesService,oficinasService, sateliteService,consultaCorteService]
 })
 export class FleteModule { }
