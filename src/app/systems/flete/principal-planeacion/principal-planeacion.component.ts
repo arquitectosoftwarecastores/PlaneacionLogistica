@@ -55,7 +55,7 @@ export class PrincipalPlaneacionComponent {
   public sumatoriaTabla = new MatTableDataSource();
 
 
-  columnasMostradas: string[] = ['index', 'claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'origen', 'tipo', 'venta',
+  columnasMostradas: string[] = ['index', 'claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
     'destino', 'tipoGuia', 'noEconomico'];
   displayedColumns: string[] = this.columnasMostradas;
   venta = new FormControl();
@@ -72,6 +72,7 @@ export class PrincipalPlaneacionComponent {
   bultosFiltro = new FormControl();
   valumenFiltro = new FormControl();
   contieneFiltro = new FormControl();
+  DocumentaFiltro = new FormControl();
   origenFiltro = new FormControl();
   tipoFiltro = new FormControl();
   ventaFiltro = new FormControl();
@@ -95,6 +96,7 @@ export class PrincipalPlaneacionComponent {
   idCedisLocal!: number;
   mostrarColumna!: boolean;
   mostrarBoton = false;
+  isLoading: boolean = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -200,26 +202,21 @@ export class PrincipalPlaneacionComponent {
       this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
       this.router.navigate(['/home/inicio']);
     }
-
-    forkJoin([this.oficinaService.getOficinas(), this.oficinaService.getZonasInfluencia()]).subscribe(
-      ([cedis, zonasInfluencia]) => {
+    this.isLoading = true;
+    forkJoin([this.oficinaService.getOficinas(), this.oficinaService.getZonasInfluencia(), this.fleteService.getTipoVenta(), this.fleteService.getUbicacionTalon()]).subscribe(
+      ([cedis, zonasInfluencia, venta, ubicacionTalon]) => {
         this.cedis = cedis;
         this.zonasInfluencia = zonasInfluencia;
+        this.ventaList = venta;
+        this.tipoList = ubicacionTalon;
+        this.isLoading = false;
       },
       (error) => {
+        this.isLoading = false;
         this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
       }
     );
 
-    forkJoin([this.fleteService.getTipoVenta(), this.fleteService.getUbicacionTalon()]).subscribe(
-      ([venta, ubicacionTalon]) => {
-        this.ventaList = venta;
-        this.tipoList = ubicacionTalon;
-      },
-      (error) => {
-        this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
-      }
-    );
 
   }
   ventasSeleccionados = false;
@@ -229,10 +226,25 @@ export class PrincipalPlaneacionComponent {
     this.ventasSeleccionados = !this.ventasSeleccionados;
     if (this.ventasSeleccionados) {
       this.venta.setValue([...this.ventaList]);
-
+      /*
       if(this.tipo.value.length!=2){
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
+      */
+      this.fleteService.getUbicacionTalon().subscribe(
+        (tipo) => {
+
+          const virtual = tipo.find(item => item.nombre === 'Virtual');
+          const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
+          if (virtual) {
+            if (tipoExiste == false) {
+              this.tipoList.push(virtual!);
+            }
+          }
+        },
+        (error) => {
+          this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
+        })
     } else {
       this.venta.setValue([]);
       this.fleteService.getUbicacionTalon().subscribe(
@@ -240,8 +252,8 @@ export class PrincipalPlaneacionComponent {
 
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if(virtual){
-            if(tipoExiste==false){
+          if (virtual) {
+            if (tipoExiste == false) {
               this.tipoList.push(virtual!);
             }
           }
@@ -442,7 +454,7 @@ export class PrincipalPlaneacionComponent {
     dia = String(fin.getDate()).padStart(2, '0');
 
     const fechaFinalFormato = `${año}-${mes}-${dia}`;
-
+    const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombre;
     if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Local')) {
       local = 1;
     }
@@ -454,17 +466,21 @@ export class PrincipalPlaneacionComponent {
     }
     console.log(cedisOrigen.id);
     let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.id : this.obtenerIdOficina();
+
     if (this.obtenerIdOficina().includes('1100') && cedisOrigen.id == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
     } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha de inicio', '⛔', 3000);
     } else if (fechaFinalFormato == null || fechaFinalFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha final', '⛔', 3000);
+    } else if (fechaIniciaFormato > fechaFinalFormato) {
+      this.openSnackBar('La fecha inicio no puede ser mayor a fecha fin', '⛔', 3000);
     } else if (this.venta.value == null) {
       this.openSnackBar('Debes de seleccionar minimo un tipo venta', '⛔', 3000);
     } else if (this.tipo.value == null) {
       this.openSnackBar('Debes de seleccionar el tipo de la ubicacion del talon', '⛔', 3000);
     } else if (this.tipo.value.length == 2 && this.venta.value.length == 3) {
+      this.isLoading = true;
 
       let datosConsultaPisoAgenciaSatelite = {
         "agencia": 1,
@@ -472,6 +488,7 @@ export class PrincipalPlaneacionComponent {
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
 
@@ -481,6 +498,7 @@ export class PrincipalPlaneacionComponent {
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
       let datosConsultaVirtual = {
@@ -489,6 +507,7 @@ export class PrincipalPlaneacionComponent {
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
 
@@ -501,7 +520,17 @@ export class PrincipalPlaneacionComponent {
         this.dataSource.paginator = this.paginator;
         this.paginator.pageSize = 5;
         this.dataSource.sort = this.tablaPlaneacionSort;
-        this.mostrarBoton = true;
+
+        let mensajeConsulta = '';
+        if (this.dataSource.data.length > 0) {
+          mensajeConsulta = '.';
+          this.mostrarBoton = true;
+        } else {
+          this.mostrarBoton = false;
+          mensajeConsulta = ' pero no se encontraron registros.';
+        }
+        this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+        this.isLoading = false;
       });
       columnasOcultas.forEach((columna) => {
         if (!this.displayedColumns.includes(columna)) {
@@ -516,6 +545,7 @@ export class PrincipalPlaneacionComponent {
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
       if (this.tipo.value.some((u: ubicacionTalon) => u.nombre === 'Piso')) {
@@ -528,11 +558,22 @@ export class PrincipalPlaneacionComponent {
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
-              this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
-              this.mostrarBoton = true;
+              if (local != 1) {
+                let mensajeConsulta = '';
+                if (this.dataSource.data.length > 0) {
+                  this.mostrarBoton = true;
+                  mensajeConsulta = '.';
+                } else {
+                  this.mostrarBoton = false;
+                  mensajeConsulta = ' pero no se encontraron registros.';
+                }
+                this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+                this.isLoading = false;
+              }
             },
             (error: any) => {
               this.mostrarBoton = false;
+              this.isLoading = false;
               this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
             });
         }
@@ -544,6 +585,7 @@ export class PrincipalPlaneacionComponent {
             "fechaInicio": fechaIniciaFormato,
             "fechaFin": fechaFinalFormato,
             "origen": Number(oficina),
+            "nombreOrigen": "" + idCedisInput,
             "zonaDeInfluencia": zonaInfluencia.idZona
           }
           this.fleteService.getPisoLocal(datosConsulta).subscribe(
@@ -555,12 +597,20 @@ export class PrincipalPlaneacionComponent {
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
-              this.mostrarBoton = true;
-              this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+              this.isLoading = false;
+              let mensajeConsulta = '';
+              if (this.dataSource.data.length > 0) {
+                this.mostrarBoton = true;
+                mensajeConsulta = '.';
+              } else {
+                this.mostrarBoton = false;
+                mensajeConsulta = ' pero no se encontraron registros.';
+              }
+              this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
             },
             (error: any) => {
               this.mostrarBoton = false;
-              this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+              this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
             });
         }
 
@@ -590,9 +640,19 @@ export class PrincipalPlaneacionComponent {
             this.dataSource.paginator = this.paginator;
             this.paginator.pageSize = 5;
             this.dataSource.sort = this.tablaPlaneacionSort;
-            this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+            this.isLoading = false;
+            let mensajeConsulta = '';
+            if (this.dataSource.data.length > 0) {
+              this.mostrarBoton = true;
+              mensajeConsulta = '.';
+            } else {
+              this.mostrarBoton = false;
+              mensajeConsulta = ' pero no se encontraron registros.';
+            }
+            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
           },
           (error: any) => {
+            this.isLoading = false;
             this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
           });
       }
@@ -600,10 +660,12 @@ export class PrincipalPlaneacionComponent {
   }
 
   calcularSumatoria(columna: keyof DatosTalon): number {
-    return this.dataSource.filteredData.slice().reduce((sum, currentRow) => {
+    const sum = this.dataSource.filteredData.slice().reduce((sum, currentRow) => {
       const value = currentRow[columna];
       return typeof value === 'number' ? sum + value : sum;
     }, 0);
+
+    return parseFloat(sum.toFixed(2));
   }
 
   validaInformacion(dato: any): boolean {
@@ -616,11 +678,9 @@ export class PrincipalPlaneacionComponent {
   }
 
   guardarCorte() {
-    console.log(this.dataSource.filteredData.slice());
-
-    if(this.dataSource.data.length<=0){
+    if (this.dataSource.data.length <= 0) {
       this.openSnackBar('No puedes agregar un corte sin tener talones en la tabla.', '⛔', 3000);
-    }else{
+    } else {
 
       const today = new Date();
       const year = today.getFullYear();
@@ -633,6 +693,8 @@ export class PrincipalPlaneacionComponent {
       const formattedDate = `${year}-${month}-${day}`;
 
       const cedisOrigen = this.formGroupFiltro.get('idCedis').value;
+      const accion = this.formGroupCorte.get('descripcionCorte').value;
+
       const jsonData = JSON.stringify(this.dataSource.filteredData.slice());
       const idTipoVentaValues = this.venta.value.map((item: { idTipoVenta: number; }) => item.idTipoVenta);
       idTipoVentaValues.sort((a: number, b: number) => a - b);
@@ -649,7 +711,7 @@ export class PrincipalPlaneacionComponent {
         "idOficina": oficina,
         "tipoCorte": "" + idUbicacionTalonString,
         "tipoVenta": "" + idTipoVentaString,
-        "accion": "actualizar",
+        "accion": accion,
         "descripcionTabla": "" + jsonData,
         "estatus": 1,
         "idPersonal": this.obtenerIdPersonal(),
@@ -659,13 +721,14 @@ export class PrincipalPlaneacionComponent {
       this.consultaCorteService.setCorte(corte).subscribe(
         (success: any) => {
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
-          this.mostrarBoton=false;
+          this.mostrarBoton = false;
         },
         (error: any) => {
           this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
         });
 
     }
+
   }
 
   obtenerIdPersonal(): string {
@@ -691,13 +754,13 @@ export class PrincipalPlaneacionComponent {
 
       if (isPisoVirtual && isPisoSelected == false) {
         this.ventaList = this.ventaList.filter((item) => item.nombre !== 'Local');
-      }else {
+      } else {
         this.fleteService.getTipoVenta().subscribe(
           (venta) => {
             const localVenta = venta.find(item => item.nombre === 'Local');
             const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
             if (localVenta) {
-              if(ventaExiste==false){
+              if (ventaExiste == false) {
                 this.ventaList.push(localVenta);
               }
             }
@@ -708,14 +771,13 @@ export class PrincipalPlaneacionComponent {
         );
       }
     } else {
-      console.log("virtual")
       this.fleteService.getTipoVenta().subscribe(
         (venta) => {
           const localVenta = venta.find(item => item.nombre === 'Local');
           const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
           if (localVenta) {
             console.log(ventaExiste);
-            if(ventaExiste==false){
+            if (ventaExiste == false) {
               this.ventaList.push(localVenta);
             }
           }
@@ -739,21 +801,17 @@ export class PrincipalPlaneacionComponent {
     } else {
       this.ventasSeleccionados = false;
     }
-    console.log(isLocalSelected);
-    console.log(isAgenciaVirtual);
-    console.log(isSateliteSelected);
-    console.log(this.tipo.value.length);
     if (isLocalSelected == true || isAgenciaVirtual == true || isSateliteSelected == true) {
-      if(isLocalSelected==true && this.tipo.value.length!=2){
+      if (isLocalSelected == true && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isLocalSelected==true && isAgenciaVirtual == false && isSateliteSelected == false && this.tipo.value.length!=2){
+      if (isLocalSelected == true && isAgenciaVirtual == false && isSateliteSelected == false && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isAgenciaVirtual==true && isSateliteSelected==true && isLocalSelected==false && this.tipo.value.length ==1 && isVirtualSelected == false){
+      if (isAgenciaVirtual == true && isSateliteSelected == true && isLocalSelected == false && this.tipo.value.length == 1 && isVirtualSelected == false) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isAgenciaVirtual==true && isSateliteSelected==true && isLocalSelected==false && this.tipo.value.length!=2){
+      if (isAgenciaVirtual == true && isSateliteSelected == true && isLocalSelected == false && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Local');
       }
     } else {
@@ -763,8 +821,8 @@ export class PrincipalPlaneacionComponent {
 
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if(virtual){
-            if(tipoExiste==false){
+          if (virtual) {
+            if (tipoExiste == false) {
               this.tipoList.push(virtual!);
             }
           }
@@ -787,6 +845,7 @@ export class PrincipalPlaneacionComponent {
       volumen: this.valumenFiltro.value,
       queContiene: this.contieneFiltro.value,
       origen: this.origenFiltro.value,
+      documenta: this.DocumentaFiltro.value,
       tipo: this.tipoFiltro.value,
       venta: this.ventaFiltro.value,
       destino: this.destinoFiltro.value,
@@ -802,6 +861,7 @@ export class PrincipalPlaneacionComponent {
       const cdpMatch = data.cdp?.toString().toLowerCase().includes(filtersObj.cdp?.toLowerCase() || '');
       const bultoMatch = data.bulto?.toString().toLowerCase().includes(filtersObj.bulto?.toLowerCase() || '');
       const volumenMatch = data.volumen?.toString().toLowerCase().includes(filtersObj.volumen?.toLowerCase() || '');
+      const documentaMatch = data.nombreOficinaDocumenta?.toLowerCase().includes(filtersObj.documenta?.toLowerCase() || '');
       const origenMatch = data.origen?.toLowerCase().includes(filtersObj.origen?.toLowerCase() || '');
       const tipoMatch = data.tipo?.toLowerCase().includes(filtersObj.tipo?.toLowerCase() || '');
       const ventaMatch = data.venta?.toLowerCase().includes(filtersObj.venta?.toLowerCase() || '');
@@ -809,10 +869,14 @@ export class PrincipalPlaneacionComponent {
       const tipoGuiaMatch = data.tipoGuia?.toLowerCase().includes(filtersObj.tipoGuia?.toLowerCase() || '');
       const noEconomicoMatch = data.noEconomico?.toString().toLowerCase().includes(filtersObj.noEconomico?.toLowerCase() || '');
 
-      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
+      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && documentaMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
     };
 
     this.dataSource.filter = JSON.stringify(filters);
+  }
+
+  limpiarFormulario(): void {
+    this.formGroupFiltro.reset();
   }
 }
 

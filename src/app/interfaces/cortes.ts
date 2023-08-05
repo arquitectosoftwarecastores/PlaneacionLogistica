@@ -1,12 +1,16 @@
-
-import { Time } from "@angular/common";
-export interface cortes {
-  id_corte  : number;
-  id_oficina : string;
-  tipo_corte : string;
-  descripcion_tabla : string;
-  estatus : number;
-  idpersonal :number;
-  fecha_mod :Date;
-  hora_mod :Time;
+export interface cortesPlaneacion {
+  idCorte: string;
+  idOficina: string;
+  tipoCorte: string;
+  tipoVenta: string;
+  accion: string;
+  descripcionTabla: string;
+  estatus: number;
+  idPersonal: number;
+  fechaMod: string;
+  horaMod: string;
+  nombreOficina: string;
+  nombrePersonal: string;
+  nombreTipoCorte: string;
+  nombreTipoVenta: string;
 }

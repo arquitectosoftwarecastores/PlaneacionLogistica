@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,7 +25,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     , InicioCastoresComponent, NgFor, MatMenuModule, InicioRoutingModule,]
 })
 
-export class InicioComponent {
+export class InicioComponent implements OnInit{
   @ViewChild('panel1') panel1!: MatExpansionPanel;
   @ViewChild('panel2') panel2!: MatExpansionPanel;
 
@@ -34,12 +34,32 @@ export class InicioComponent {
   @ViewChild('sidenav') sidenav!: MatSidenav;
   panelOpenState = false;
   expansionPanels: any;
-  public nombreCompletoUsuario: string;
+  public nombreCompletoUsuario!: string;
+  idOficinaActual!:string;
+  fechaActual!:string;
 
   constructor(private authService: AuthService, private router: Router, public snackBar: MatSnackBar) {
-    this.nombreCompletoUsuario = this.obtenerNombre();
   }
 
+
+  ngOnInit(): void {
+    this.nombreCompletoUsuario = this.obtenerNombre();
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = ("0" + (today.getMonth() + 1)).slice(-2);
+      const day = ("0" + today.getDate()).slice(-2);
+      const horas = today.getHours();
+      const minutos = today.getMinutes();
+      const segundos = today.getSeconds();
+      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+      this.fechaActual = `${year}-${month}-${day}`;
+      this.idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
+  }
+
+  obtenerIdOficina(): string {
+    let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
+    return idoficinaJson.claveOficina;
+  }
   /**
     * openSnackBar: Funcion para ver los mensajes.
     *

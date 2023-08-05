@@ -31,7 +31,7 @@
         <mat-nav-list>
           <a mat-list-item routerLink="/home/flete/principalPlaneacion" routerLinkActive="active"
             ariaCurrentWhenActive="page">Planeación</a>
-          <a mat-list-item routerLink="/home/flete/consultaCorte" routerLinkActive="active"
+          <a mat-list-item [routerLink]="'/home/flete/consultaCorte/' + fechaActual + '/' + fechaActual + '/' + idOficinaActual" routerLinkActive="active"
             ariaCurrentWhenActive="page">Consulta corte</a>
           <a mat-list-item routerLink="/home/flete/fleteOptimo" routerLinkActive="active" ariaCurrentWhenActive="page">Flete
             óptimo</a>

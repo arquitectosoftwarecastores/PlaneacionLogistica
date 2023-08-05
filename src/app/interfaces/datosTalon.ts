@@ -2,6 +2,8 @@ export interface DatosTalon {
   claTalon: string;
   tpdc: number;
   tipoTalon: string;
+  idOficinaDocumenta: String;
+  nombreOficinaDocumenta: String;
   flete: number;
   cdp: number;
   bulto: number;
@@ -19,6 +21,6 @@ export interface DatosTalon {
   tipoGuia: string;
   unidad: number;
   noEconomico: string;
-  fecha: Date; // Para usar LocalDate, podemos utilizar la clase Date de JavaScript
-  hora: Date; // Para usar LocalTime, podemos utilizar la clase Date de JavaScript
+  fecha: Date;
+  hora: Date;
 }
