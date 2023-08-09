@@ -4,7 +4,7 @@ export interface cortesPlaneacion {
   tipoCorte: string;
   tipoVenta: string;
   accion: string;
-  descripcionTabla: string;
+  descripcionTabla: any;
   estatus: number;
   idPersonal: number;
   fechaMod: string;

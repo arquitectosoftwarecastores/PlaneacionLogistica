@@ -19,7 +19,7 @@
       <input matInput [matDatepicker]="fin" class="form-control sucursal" id="fechaFin" formControlName="fechaFin"
         placeholder="Seleccione una fecha" [matDatepickerFilter]="FinFiltro" [disabled]="true">
       <mat-datepicker-toggle matSuffix [for]="fin"></mat-datepicker-toggle>
-      <mat-datepicker #fin disabled="false"></mat-datepicker>
+      <mat-datepicker #fin disabled="false" (dateChange)="onFechaFinChange($event)"></mat-datepicker>
     </mat-form-field>
   </form>
 </div>
@@ -27,8 +27,8 @@
 
 <div id="fletes">
   <div class="ConsultaCorteFiltro">
-    <button id="Buscar" type="button" class="btn btn-primary" (click)="buscar()">Buscar</button>
-    <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
+    <button id="Buscar" type="button" class="btn btn-primary" (click)="buscar();">Buscar</button>
+    <button id="Limpiar" type="button" class="btn btn-primary" (click)="limpiarFormulario();">Limpiar</button>
   </div>
 </div>
 <br>
@@ -40,8 +40,8 @@
       <ng-container matColumnDef="idCorte">
         <th mat-header-cell *matHeaderCellDef> #Corte
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1"  #input>
+            <input type="text" class="form-control" [formControl]="idCorteFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+              (input)="applyFilter();">
         </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.idCorte}} </td>
@@ -49,8 +49,8 @@
       <ng-container matColumnDef="fechaMod">
         <th mat-header-cell *matHeaderCellDef> Fecha
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" #input>
+            <input type="text" class="form-control" [formControl]="fechaModFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+               (input)="applyFilter();">
         </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.fechaMod}} </td>
@@ -58,8 +58,8 @@
       <ng-container matColumnDef="horaMod">
         <th mat-header-cell *matHeaderCellDef> Hora
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" #input>
+            <input type="text" class="form-control" [formControl]="horaModFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+             (input)="applyFilter();">
         </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.horaMod}} </td>
@@ -67,8 +67,8 @@
       <ng-container matColumnDef="nombreTipoVenta">
         <th mat-header-cell *matHeaderCellDef> Tipo de Venta
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" #input>
+            <input type="text" class="form-control" [formControl]="nombreTipoVentaFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+              (input)="applyFilter();">
         </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombreTipoVenta}} </td>
@@ -76,18 +76,14 @@
       <ng-container matColumnDef="nombreTipoCorte">
         <th mat-header-cell *matHeaderCellDef> Tipo de corte
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" #input>
+            <input type="text" class="form-control" [formControl]="nombreTipoCorteFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+              (input)="applyFilter();">
         </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombreTipoCorte}} </td>
       </ng-container>
       <ng-container matColumnDef="detalles">
         <th mat-header-cell *matHeaderCellDef> Detalle
-          <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" #input>
-        </div>
         </th>
         <td mat-cell *matCellDef="let row"> <button mat-button (click)="detalle(row.idCorte)">
           <mat-icon>assignment</mat-icon>

@@ -160,7 +160,7 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="volumen">
-        <th mat-header-cell *matHeaderCellDef> Volumen
+        <th mat-header-cell *matHeaderCellDef> Volumen(m³)
           <div>
             <input type="text" class="form-control" [formControl]="valumenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
             (input)="applyFilter();">
@@ -225,7 +225,7 @@
         <td mat-cell *matCellDef="let row">{{row.destino }}</td>
       </ng-container>
       <ng-container matColumnDef="noGuia">
-        <th mat-header-cell *matHeaderCellDef> NoGuia
+        <th mat-header-cell *matHeaderCellDef> No. Guia
           <div>
             <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
             (input)="applyFilter();">

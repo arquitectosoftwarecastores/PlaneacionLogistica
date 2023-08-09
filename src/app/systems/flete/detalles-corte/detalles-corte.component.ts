@@ -7,7 +7,7 @@ import { consultaCorteService } from '../../../services/consultaCorte';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-detalles-corte',
@@ -15,47 +15,59 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./detalles-corte.component.css']
 })
 export class DetallesCorteComponent {
-  displayedColumns: string[] = ['claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene','documenta', 'origen', 'tipo', 'venta',
+  displayedColumns: string[] = ['claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
     'destino', 'tipoGuia', 'noEconomico'];
-    corte!:string;
-    descripcion!:string;
-    fechaInicio!:string;
-    fechaFin!:string;
-    oficina!:string;
-    hora!:string;
-    tipoCorte!:string;
-    isLoading: boolean = true;
-
+  corte!: string;
+  descripcion!: string;
+  fechaInicio!: string;
+  fechaFin!: string;
+  oficina!: string;
+  hora!: string;
+  tipoCorte!: string;
+  isLoading: boolean = true;
+  idCorte!:string;
   public dataSource = new MatTableDataSource<DatosTalon>();
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('tablaDetalleSort', { static: false }) set tablaDetalleSort(tablaDetalleSort: MatSort) {
     if (this.validaInformacion(tablaDetalleSort)) this.dataSource.sort = tablaDetalleSort;
   }
-  constructor(public snackBar: MatSnackBar, private consultaCorteService: consultaCorteService, private location: Location,private router: ActivatedRoute) {
+  constructor(public snackBar: MatSnackBar, private consultaCorteService: consultaCorteService, private location: Location, private router: ActivatedRoute, private route: Router) {
     const datosTalonFromStorage = localStorage.getItem('datosTalon');
     console.log(datosTalonFromStorage);
-    this.consultaCorteService.getFindbyCorte(datosTalonFromStorage!).subscribe(
-      (success: any) => {
-        this.isLoading = false;
-        const detalle = JSON.parse(success.descripcionTabla);
-        this.corte=success.idCorte;
-        this.descripcion=success.accion;
-        this.fechaInicio=success.fechaMod;
-        this.hora=success.horaMod;
-        this.tipoCorte=success.nombreTipoVenta;
-        console.log(success);
-        this.dataSource = new MatTableDataSource<DatosTalon>(detalle as DatosTalon[]);
-        this.dataSource.paginator = this.paginator;
-        this.paginator.pageSize = 5;
-        this.dataSource.sort = this.tablaDetalleSort;
-        this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
-      },
-      (error: any) => {
-        this.isLoading = false;
-        this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
-      });
+    this.router.params.subscribe((params: { [x: string]: any }) => {
+      console.log(params);
+      this.fechaInicio = params['fechaInicio'];
+      console.log(this.fechaInicio);
+      this.fechaFin = params['fechaFin'];
+      this.oficina = params['oficina'];
+      this.idCorte=params['idCorte'];
 
+
+      this.consultaCorteService.getFindbyCorte(this.idCorte!).subscribe(
+        (success: any) => {
+          this.isLoading = false;
+          console.log(success);
+          const tabla=success.descripcionTabla;
+          console.log(tabla);
+          const detalle = JSON.parse(tabla);
+          console.log(detalle);
+          this.corte = success.idCorte;
+          this.descripcion = success.accion;
+          this.hora = success.horaMod;
+          this.tipoCorte = success.nombreTipoVenta;
+
+          this.dataSource = new MatTableDataSource<DatosTalon>(detalle as DatosTalon[]);
+          this.dataSource.paginator = this.paginator;
+          this.paginator.pageSize = 5;
+          this.dataSource.sort = this.tablaDetalleSort;
+          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+        },
+        (error: any) => {
+          this.isLoading = false;
+          this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+        });
+    });
 
     if (datosTalonFromStorage) {
       this.dataSource = new MatTableDataSource<DatosTalon>(JSON.parse(datosTalonFromStorage));
@@ -63,11 +75,7 @@ export class DetallesCorteComponent {
       this.dataSource = new MatTableDataSource<DatosTalon>([]);
     }
 
-    this.router.params.subscribe((params: { [x: string]: any; }) => {
-      this.fechaInicio = params['fechaInicio'];
-      this.fechaFin = params['fechaFin'];
-      this.oficina = params['oficina'];
-    });
+
   }
 
 
@@ -84,9 +92,9 @@ export class DetallesCorteComponent {
   destinoFiltro = new FormControl();
   tipoGuiaFiltro = new FormControl();
   noEconomicoFiltro = new FormControl();
-  DocumentaFiltro=new FormControl();
+  DocumentaFiltro = new FormControl();
 
-   applyFilter() {
+  applyFilter() {
     const filters = {
       claTalon: this.numeroTalonFiltro.value,
       tipoTalon: this.tipoTalonFiltro.value,
@@ -96,7 +104,7 @@ export class DetallesCorteComponent {
       volumen: this.valumenFiltro.value,
       queContiene: this.contieneFiltro.value,
       origen: this.origenFiltro.value,
-      documenta:this.DocumentaFiltro.value,
+      documenta: this.DocumentaFiltro.value,
       tipo: this.tipoFiltro.value,
       venta: this.ventaFiltro.value,
       destino: this.destinoFiltro.value,
@@ -135,10 +143,12 @@ export class DetallesCorteComponent {
     }
   }
   calcularSumatoria(columna: keyof DatosTalon): number {
-    return this.dataSource.filteredData.slice().reduce((sum, currentRow) => {
+    const talonesCorte = this.dataSource.filteredData;
+    const sum = talonesCorte.slice().reduce((sum, currentRow) => {
       const value = currentRow[columna];
       return typeof value === 'number' ? sum + value : sum;
     }, 0);
+    return parseFloat(sum.toFixed(2));
   }
 
   openSnackBar(message: string, action: string, tiempo: number): void {
@@ -146,7 +156,8 @@ export class DetallesCorteComponent {
       duration: tiempo
     });
   }
-  regresar(){
-    this.router.navigate(['home/flete/DetallesCorte',this.fechaInicio,this.fechaFin,this.oficina]);
+  regresar() {
+    this.route.navigate(['home/flete/consultaCorte/' + this.fechaInicio + '/' + this.fechaFin + '/' + this.oficina]);
   }
+
 }

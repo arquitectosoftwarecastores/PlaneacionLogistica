@@ -9,7 +9,6 @@ import { AuthService } from 'src/app/authentication/login/auth.service';
 import { cortesPlaneacion } from 'src/app/interfaces/cortes';
 import { consultaCorteService } from '../../../services/consultaCorte';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-
 export interface UserData {
   numero: string;
   personal: string;
@@ -41,9 +40,15 @@ export class ConsultaCorteComponent implements OnInit {
   isLoading: boolean = true;
   displayedColumns: string[] = ['idCorte', 'fechaMod', 'horaMod', 'nombreTipoVenta', 'nombreTipoCorte', 'detalles'];
   dataSource!: MatTableDataSource<cortesPlaneacion>;
-  fechaInicio!:string;
-  fechaFin!:string;
-  oficina!:string;
+  fechaInicio!: string;
+  fechaFin!: string;
+  oficina!: string;
+
+  idCorteFiltro = new FormControl();
+  fechaModFiltro = new FormControl();
+  horaModFiltro = new FormControl();
+  nombreTipoVentaFiltro = new FormControl();
+  nombreTipoCorteFiltro = new FormControl();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort!: MatSort;
@@ -59,7 +64,7 @@ export class ConsultaCorteComponent implements OnInit {
 
 
   constructor(public snackBar: MatSnackBar, public dialog: MatDialog, private router: Router, private authService: AuthService, private consultaCorteService: consultaCorteService,
-    private formBuilder: FormBuilder,private route: ActivatedRoute) { }
+    private formBuilder: FormBuilder, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
 
@@ -133,9 +138,8 @@ export class ConsultaCorteComponent implements OnInit {
       "oficina": this.oficina
     }
 
-
-    const filtroGuardado = localStorage.getItem('filtro');
-
+    console.log(filtro);
+    let mensajeConsulta = '';
     if (this.obtenerIdOficina() == '1100') {
       this.consultaCorteService.getAllCortes(filtro).subscribe(
         (success: any) => {
@@ -145,7 +149,12 @@ export class ConsultaCorteComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaCortesSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          if (this.dataSource.data.length > 0) {
+            mensajeConsulta = '.';
+          } else {
+            mensajeConsulta = ' pero no se encontraron registros.';
+          }
+          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         },
         (error: any) => {
           this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
@@ -159,7 +168,12 @@ export class ConsultaCorteComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaCortesSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          if (this.dataSource.data.length > 0) {
+            mensajeConsulta = '.';
+          } else {
+            mensajeConsulta = ' pero no se encontraron registros.';
+          }
+          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         },
         (error: any) => {
           this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
@@ -211,10 +225,37 @@ export class ConsultaCorteComponent implements OnInit {
 
 
   detalle(detalle: string) {
-    const fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
-    const fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
-    const idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
-    this.router.navigate(['home/flete/DetallesCorte/' + fechaInicioValue + '/' + fechaFinValue + '/' + idOficinaActual]);
+    //const fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
+    //const fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
+    console.log(detalle);
+    let fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
+    let fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
+    console.log(fechaFinValue);
+    if (fechaInicioValue!=' ' && fechaFinValue!=' ') {
+      const fechaInicio = new Date(fechaInicioValue);
+      const fechaFin = new Date(fechaFinValue);
+
+      const formattedFechaInicio = `${fechaInicio.getFullYear()}-${(fechaInicio.getMonth() + 1).toString().padStart(2, '0')}-${fechaInicio.getDate().toString().padStart(2, '0')}`;
+      const formattedFechaFin = `${fechaFin.getFullYear()}-${(fechaFin.getMonth() + 1).toString().padStart(2, '0')}-${fechaFin.getDate().toString().padStart(2, '0')}`;
+
+      const idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
+      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + idOficinaActual+'/'+detalle]);
+    }else{
+      let fechaInicioValue = new Date();
+      let fechaFinValue = new Date();
+
+      const fechaInicio = new Date(fechaInicioValue);
+      const fechaFin = new Date(fechaFinValue);
+
+      const formattedFechaInicio = `${fechaInicio.getFullYear()}-${(fechaInicio.getMonth() + 1).toString().padStart(2, '0')}-${fechaInicio.getDate().toString().padStart(2, '0')}`;
+      const formattedFechaFin = `${fechaFin.getFullYear()}-${(fechaFin.getMonth() + 1).toString().padStart(2, '0')}-${fechaFin.getDate().toString().padStart(2, '0')}`;
+      console.log("aqui")
+      console.log(formattedFechaInicio);
+      console.log(formattedFechaFin);
+      const idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
+      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + idOficinaActual+'/'+detalle]);
+    }
+
   }
 
   obtenerIdOficina(): string {
@@ -223,16 +264,28 @@ export class ConsultaCorteComponent implements OnInit {
   }
 
   buscar() {
-    this.isLoading = true;
+
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
     const fechaFinal = this.formGroupFiltro.get('fechaFin').value;
+
+
     let oficina = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
     const filtro = {
       "fechaInicio": fechaInicio,
       "fechaFin": fechaFinal,
       "oficina": oficina
     }
-    if (this.obtenerIdOficina() == '1100') {
+    console.log("consultaCorte");
+    console.log(filtro)
+    let mensajeConsulta = '';
+    if(fechaInicio==null){
+      this.openSnackBar('Debe seleccionar una fecha en fecha inicio.', '⛔', 3000);
+    }else if(fechaFinal==null){
+      this.openSnackBar('Debe seleccionar una fecha en fecha fin.', '⛔', 3000);
+    }else if (fechaInicio > fechaFinal) {
+      this.openSnackBar('La fecha inicio no puede ser mayor a fecha fin', '⛔', 3000);
+    }else if (this.obtenerIdOficina() == '1100') {
+      this.isLoading = true;
       this.consultaCorteService.getAllCortes(filtro).subscribe(
         (success: any) => {
           this.isLoading = false;
@@ -241,13 +294,19 @@ export class ConsultaCorteComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaCortesSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          if (this.dataSource.data.length > 0) {
+            mensajeConsulta = '.';
+          } else {
+            mensajeConsulta = ' pero no se encontraron registros.';
+          }
+          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         },
         (error: any) => {
           this.isLoading = false;
           this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
         });
     } else {
+      this.isLoading = true;
       this.consultaCorteService.getCortesOficinas(filtro).subscribe(
         (success: any) => {
           console.log(success);
@@ -256,7 +315,12 @@ export class ConsultaCorteComponent implements OnInit {
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaCortesSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          if (this.dataSource.data.length > 0) {
+            mensajeConsulta = '.';
+          } else {
+            mensajeConsulta = ' pero no se encontraron registros.';
+          }
+          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         },
         (error: any) => {
           this.isLoading = false;
@@ -272,4 +336,68 @@ export class ConsultaCorteComponent implements OnInit {
     return event.value;
   }
 
+  applyFilter() {
+    const filters = {
+      idCorte: this.idCorteFiltro.value,
+      fechaMod: this.fechaModFiltro.value,
+      horaMod: this.horaModFiltro.value,
+      nombreTipoVenta: this.nombreTipoVentaFiltro.value,
+      nombreTipoCorte: this.nombreTipoCorteFiltro.value,
+    };
+
+    this.dataSource.filterPredicate = (data: cortesPlaneacion, filter: string) => {
+      const filtersObj = JSON.parse(filter);
+      const idCorteMatch = data.idCorte?.toString().toLowerCase().includes(filtersObj.idCorte?.toLowerCase() || '');
+      const fechaModMatch = data.fechaMod?.toLowerCase().includes(filtersObj.fechaMod?.toLowerCase() || '');
+      const horaModMatch = data.horaMod?.toString().toLowerCase().includes(filtersObj.horaMod?.toLowerCase() || '');
+      const nombreTipoVentaMatch = this.checkNombreTipoVenta(data, filtersObj.nombreTipoVenta);
+
+      const nombreTipoCorteMatch = this.checkNombreTipoUbicacion(data, filtersObj.nombreTipoCorte);
+
+      return idCorteMatch && fechaModMatch && horaModMatch && nombreTipoVentaMatch && nombreTipoCorteMatch;
+    };
+
+    this.dataSource.filter = JSON.stringify(filters);
+  }
+
+  checkNombreTipoVenta(data: any, filterValue: string): boolean {
+    const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
+
+    if (lowercaseFilterValue === 'local') {
+      return data.nombreTipoVenta?.toLowerCase() === 'local' && !filterValue.includes(',');
+    } else if (lowercaseFilterValue === 'agencia' || lowercaseFilterValue === 'satelite') {
+      return data.nombreTipoVenta?.toLowerCase() === lowercaseFilterValue;
+    } else {
+      const normalizedNombreTipoVenta = this.removeAccents(data.nombreTipoVenta?.toLowerCase() || '');
+      return normalizedNombreTipoVenta.includes(lowercaseFilterValue);
+    }
+  }
+
+  checkNombreTipoUbicacion(data: any, filterValue: string): boolean {
+    const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
+
+    if (lowercaseFilterValue === 'piso') {
+      return data.nombreTipoVenta?.toLowerCase() === 'piso' && !filterValue.includes(',');
+    } else if (lowercaseFilterValue === 'virtual') {
+      return data.nombreTipoVenta?.toLowerCase() === lowercaseFilterValue;
+    } else {
+      const normalizedNombreTipoVenta = this.removeAccents(data.nombreTipoVenta?.toLowerCase() || '');
+      return normalizedNombreTipoVenta.includes(lowercaseFilterValue);
+    }
+  }
+
+  // ...
+
+
+  removeAccents(text: string): string {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+
+
+  limpiarFormulario(): void {
+    this.formGroupFiltro.reset();
+    this.dataSource = new MatTableDataSource<cortesPlaneacion>(); // Asignar un nuevo dataSource vacío
+    this.dataSource.sort = this.sort;
+  }
 }
