@@ -8,6 +8,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as pako from 'pako';
 
 @Component({
   selector: 'app-detalles-corte',
@@ -50,7 +51,8 @@ export class DetallesCorteComponent {
           console.log(success);
           const tabla=success.descripcionTabla;
           console.log(tabla);
-          const detalle = JSON.parse(tabla);
+          const compressedAndEncoded = pako.inflate(tabla, { to: 'string' });
+          const detalle = JSON.parse(compressedAndEncoded);
           console.log(detalle);
           this.corte = success.idCorte;
           this.descripcion = success.accion;

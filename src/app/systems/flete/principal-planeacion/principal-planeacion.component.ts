@@ -24,6 +24,7 @@ import { fletesService } from 'src/app/services/flete.service';
 import { ubicacionTalon } from 'src/app/interfaces/ubicacionTalon';
 import { DatosTalon } from 'src/app/interfaces/datosTalon';
 import { consultaCorteService } from 'src/app/services/consultaCorte';
+import * as pako from 'pako';
 
 
 @Component({
@@ -739,8 +740,13 @@ export class PrincipalPlaneacionComponent {
 
       const cedisOrigen = this.formGroupFiltro.get('idCedis').value;
       const accion = this.formGroupCorte.get('descripcionCorte').value;
-
+      //
       const jsonData = JSON.stringify(this.dataSource.filteredData.slice());
+      const compressedData = pako.deflate(jsonData, { level: 9 });
+      const numberArray = Array.from(compressedData); // Convert Uint8Array to an array of numbers
+      const encodedData = btoa(String.fromCharCode.apply(null, numberArray));
+      console.log("base 64");
+      console.log(encodedData);
       const idTipoVentaValues = this.venta.value.map((item: { idTipoVenta: number; }) => item.idTipoVenta);
       idTipoVentaValues.sort((a: number, b: number) => a - b);
       const idTipoVentaString = idTipoVentaValues.join(',');
@@ -752,12 +758,13 @@ export class PrincipalPlaneacionComponent {
       const idUbicacionTalonArray = this.tipo.value.map((item: { idUbicacionTalon: any; }) => item.idUbicacionTalon);
       idUbicacionTalonArray.sort((a: number, b: number) => a - b);
       const idUbicacionTalonString = idUbicacionTalonArray.join(',');
+
       const corte = {
         "idOficina": oficina,
         "tipoCorte": "" + idUbicacionTalonString,
         "tipoVenta": "" + idTipoVentaString,
         "accion": accion,
-        "descripcionTabla": "" + jsonData,
+        "descripcionTabla": "" + encodedData,
         "estatus": 1,
         "idPersonal": this.obtenerIdPersonal(),
         "fechaMod": formattedDate,

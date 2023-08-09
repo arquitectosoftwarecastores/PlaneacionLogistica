@@ -26,6 +26,7 @@ import { DetallesCorteComponent } from './detalles-corte/detalles-corte.componen
     ReactiveFormsModule,
     AngularMaterialModule,
     MultiSelectModule,
+
   ],
   providers:[HttpClientModule, fletesService,oficinasService, sateliteService,consultaCorteService]
 })
