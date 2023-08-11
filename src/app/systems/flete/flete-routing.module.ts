@@ -28,7 +28,7 @@ export const fletesRoutes: Routes = [
         }
       },
       {
-        path: 'consultaCorte/:fechaInicio/:fechaFin/:oficina',
+        path: 'consultaCorte/:fechaInicio/:fechaFin',
         component: ConsultaCorteComponent,
         canActivate: [AuthGuard,RoleGuard],
         data: {
@@ -37,7 +37,7 @@ export const fletesRoutes: Routes = [
         }
       },
       {
-        path: 'DetallesCorte/:fechaInicio/:fechaFin/:oficina/:idCorte',
+        path: 'DetallesCorte/:fechaInicio/:fechaFin/:idCorte',
         component: DetallesCorteComponent,
         canActivate: [AuthGuard,RoleGuard],
         data: {
