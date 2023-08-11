@@ -9,6 +9,7 @@ import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { tipoVenta } from '../interfaces/tipoVenta';
 import { ubicacionTalon } from '../interfaces/ubicacionTalon';
 import { DatosTalon } from '../interfaces/datosTalon';
+import { circuito } from '../interfaces/circuitos';
 
 
 
@@ -20,6 +21,49 @@ export class fletesService {
   getFletesOptimo(){
     return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getAll`);
   }
+  getByFletesOptimo(idFleteOptimo:number){
+    return this.http.get<flete_optimo>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getById/`+idFleteOptimo);
+  }
+
+  getCircuitos(){
+    return this.http.get<circuito[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/getRutasAll`);
+  }
+  getByCircuito(idCircuito:number){
+    return this.http.get<circuito[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/getById/`+idCircuito);
+  }
+
+  getFletesOptimoOficina(oficina:string){
+    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getByIdOficina/`+oficina);
+  }
+  getFlete(idFlete:string){
+    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getById/`+idFlete);
+  }
+
+  updateFlete(data:any){
+    return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/update`, data)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          console.error(e.error.message);
+        }
+        return throwError(e);
+      })
+    );
+  }
+
+  createFlete(flete:any){
+    return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/create`, flete)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          console.error(e.error.message);
+        }
+        return throwError(e);
+      })
+    );
+  }
+
+
   getTipoVenta():Observable<tipoVenta[]>{
     return this.http.get<tipoVenta[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getTipoVenta`);
   }

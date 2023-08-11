@@ -4,23 +4,30 @@
 </div>
 <br>
 <div class="filtroFecha">
-  <h5>Fecha inicio</h5>
-  <input type="date" class="form-control" name="" id="">
-  <h5>Fecha fin</h5>
-  <input type="date" class="form-control">
-  <h5>Tipo</h5>
-    <select class="custom-select" id="inputGroupSelect01">
-      <option selected>Choose...</option>
-      <option value="1">One</option>
-      <option value="2">Two</option>
-      <option value="3">Three</option>
-    </select>
+  <form id="formGroupFiltro" name="formGroupFiltro" style="display: contents;" method="post"
+    [formGroup]="formGroupFiltro">
+    <h5>Fecha inicio</h5>
+    <mat-form-field>
+      <input matInput [matDatepicker]="inicio" class="form-control sucursal" id="fechaInicio"
+        formControlName="fechaInicio" placeholder="Seleccione una fecha" [matDatepickerFilter]="inicioFiltro"
+        [disabled]="true">
+      <mat-datepicker-toggle matSuffix [for]="inicio"></mat-datepicker-toggle>
+      <mat-datepicker #inicio disabled="false" (dateChange)="onFechaInicioChange($event)"></mat-datepicker>
+    </mat-form-field>
+    <h5>Fecha fin</h5>
+    <mat-form-field>
+      <input matInput [matDatepicker]="fin" class="form-control sucursal" id="fechaFin" formControlName="fechaFin"
+        placeholder="Seleccione una fecha" [matDatepickerFilter]="finFiltro" [disabled]="true">
+      <mat-datepicker-toggle matSuffix [for]="fin"></mat-datepicker-toggle>
+      <mat-datepicker #fin disabled="false"></mat-datepicker>
+    </mat-form-field>
+  </form>
 </div>
 
 
 <div id="fletes">
   <div class="ConsultaCorteFiltro">
-    <button id="Buscar" type="button" class="btn btn-primary">Buscar</button>
+    <button id="Buscar" type="button" class="btn btn-primary" (click)="buscar()">Buscar</button>
     <button id="Limpiar" type="button" class="btn btn-primary">Limpiar</button>
   </div>
 </div>
@@ -29,51 +36,58 @@
 
 <div class="consultaCorte">
   <section class="example-container mat-elevation-z8" tabindex="0">
-    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
-      <ng-container matColumnDef="numero">
+    <table mat-table class="table table-striped" [dataSource]="dataSource" matSort #tablaCortesSort="matSort">
+      <ng-container matColumnDef="idCorte">
         <th mat-header-cell *matHeaderCellDef> #Corte
           <div>
             <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+              aria-describedby="basic-addon1"  #input>
         </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.numero}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.idCorte}} </td>
       </ng-container>
-      <ng-container matColumnDef="personal">
+      <ng-container matColumnDef="fechaMod">
         <th mat-header-cell *matHeaderCellDef> Fecha
           <div>
             <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+              aria-describedby="basic-addon1" #input>
         </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.personal}}% </td>
+        <td mat-cell *matCellDef="let row"> {{row.fechaMod}} </td>
       </ng-container>
-      <ng-container matColumnDef="sistema">
+      <ng-container matColumnDef="horaMod">
         <th mat-header-cell *matHeaderCellDef> Hora
           <div>
             <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+              aria-describedby="basic-addon1" #input>
         </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.sistema}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.horaMod}} </td>
       </ng-container>
-      <ng-container matColumnDef="tipoUsuario">
+      <ng-container matColumnDef="nombreTipoVenta">
+        <th mat-header-cell *matHeaderCellDef> Tipo de Venta
+          <div>
+            <input type="text" class="form-control" aria-label="Filtro"
+              aria-describedby="basic-addon1" #input>
+        </div>
+        </th>
+        <td mat-cell *matCellDef="let row"> {{row.nombreTipoVenta}} </td>
+      </ng-container>
+      <ng-container matColumnDef="nombreTipoCorte">
         <th mat-header-cell *matHeaderCellDef> Tipo de corte
           <div>
             <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
+              aria-describedby="basic-addon1" #input>
         </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.tipoUsuario}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.nombreTipoCorte}} </td>
       </ng-container>
-      <ng-container matColumnDef="roles">
+      <ng-container matColumnDef="detalles">
         <th mat-header-cell *matHeaderCellDef> Detalle
           <div>
-            <input type="text" class="form-control" aria-label="Filtro"
-              aria-describedby="basic-addon1" (keyup)="applyFilter($event)" #input>
         </div>
         </th>
-        <td mat-cell *matCellDef="let row"> <button mat-button>
+        <td mat-cell *matCellDef="let row"> <button mat-button (click)="detalle(row.idCorte)">
           <mat-icon>assignment</mat-icon>
         </button></td>
       </ng-container>
@@ -83,7 +97,10 @@
         <td class="mat-cell" colspan="4">No existe</td>
       </tr>
     </table>
+    <div class="spinner-overlay" *ngIf="isLoading">
+      <mat-spinner color="primary"></mat-spinner>
+    </div>
   </section>
   <br>
-  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" paginator aria-label="Select page of users"></mat-paginator>
 </div>

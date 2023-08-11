@@ -1059,3 +1059,38 @@ span {
   height: auto;
   background: transparent;
 }
+
+.select2-container--default .select2-selection--multiple {
+  height: 120px;
+  max-height: 300px; /* Ajusta esta altura según tus necesidades */
+  overflow-y: auto;
+}
+
+/* Estilo de los elementos seleccionados */
+.select2-container--default .select2-selection__choice {
+  padding: 2px 6px;
+  background-color: #f0f0f0;
+  margin-right: 5px;
+}
+
+/* Cambiar el color de fondo cuando se pasa el mouse sobre los elementos seleccionados */
+.select2-container--default .select2-selection__choice:hover {
+  background-color: #e0e0e0;
+}
+
+#circuitos{
+  display: block;
+  padding: 5px;
+  height: 135px;
+}
+
+
+.select2-container{
+  width: 78% !important;
+}
+
+.select2-container--default .select2-results > .select2-results__options {
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+}

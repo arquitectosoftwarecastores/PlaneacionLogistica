@@ -6,63 +6,55 @@
 
 <div id="fletes">
   <div class="botonesFiltro">
-    <button id="agregarFlete" type="button" class="btn btn-primary" (click)="openDialog()"
+    <button id="agregarFlete" type="button" class="btn btn-primary" (click)="abrirModalAgregar()"
       *ngIf="permisoAInsertarAgregar == 1">Agregar flete</button>
   </div>
 </div>
 
 <div class="felteOptimo">
   <section class="example-container mat-elevation-z8" tabindex="0">
-    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
-      <ng-container matColumnDef="id_oficina">
+    <table mat-table [dataSource]="dataSource" matSort class="table table-striped" matSort
+      #tablaFleteOptimoSort="matSort">
+      <ng-container matColumnDef="nombreOficina">
         <th mat-header-cell *matHeaderCellDef> Sucursal
           <div>
             <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
               (keyup)="applyFilter($event)" #input>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.flete}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.nombreOficina}} </td>
       </ng-container>
-      <ng-container matColumnDef="cdp">
+      <ng-container matColumnDef="nombreZona">
         <th mat-header-cell *matHeaderCellDef> Ciudad
           <div>
             <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
               (keyup)="applyFilter($event)" #input>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.cdp}}% </td>
+        <td mat-cell *matCellDef="let row"> {{row.nombreZona}}</td>
       </ng-container>
-      <ng-container matColumnDef="bultos">
+      <ng-container matColumnDef="cantidadFleteOptimo">
         <th mat-header-cell *matHeaderCellDef> Zona
           <div>
             <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
               (keyup)="applyFilter($event)" #input>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.bultos}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.cantidadFleteOptimo}} </td>
       </ng-container>
-      <ng-container matColumnDef="contiene">
-        <th mat-header-cell *matHeaderCellDef> Flete optimo
-          <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
-          </div>
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.contiene}} </td>
-      </ng-container>
-      <ng-container matColumnDef="volumen">
+      <ng-container matColumnDef="estatus">
         <th mat-header-cell *matHeaderCellDef> Estatus
           <div>
             <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
               (keyup)="applyFilter($event)" #input>
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.volumen}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.estatus == 1 ? 'ACTIVADO' : 'INACTIVO' }} </td>
       </ng-container>
-      <ng-container matColumnDef="origen">
-        <th mat-header-cell *matHeaderCellDef> </th>
+      <ng-container matColumnDef="circuito">
+        <th mat-header-cell *matHeaderCellDef> Circuito</th>
         <td mat-cell *matCellDef="let row"> <button id="Modificar" type="button" class="btn btn-primary"
-            (click)="openDialogModificar()" *ngIf="permisoDActualizar == 1"><mat-icon>edit</mat-icon></button></td>
+            (click)="abrirModalModificar(row.idFleteOptimo)" *ngIf="permisoDActualizar == 1"><mat-icon>edit</mat-icon></button></td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -77,88 +69,66 @@
   <br>
   <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
 
-  <ng-template #dialogTemplate id="divFleteAgregar">
+
+
+  <ng-template #dialogTemplate>
     <div id="datosFlete">
       <div id="datosFleteBox">
-        <h1>Agregar Flete</h1>
-        <div id="personal">
-          <h3>Sucursal</h3>
-          <div id="buscarDatosflete">
-            <input type="text" class="form-control"><span class="input-group-text"
-              id="basic-addon1"><mat-icon>search</mat-icon></span>
-          </div>
-
-        </div>
-        <div id="usuario" class="datosFlete">
-          <h3>Zona</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div id="respuesta" class="datosFlete">
-          <h3>Flete optimo</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div class="estatus">
-          <div class="form-group" style="width: 100%;">
-            <h3>Estatus</h3>
-            <div class="switch-group" style="font-size: 0.8em;">
-              <label style="padding: 0 1em;" id="inactivo" for="inactivo">Inactivo</label>
-              <label class="switch">
-                <input type="checkbox" name="estatus">
-                <span class="slider round"></span>
-              </label>
-              <label style="padding: 0 0 0 1em;" id="activo" for="activo">Activo</label>
+        <form id="formGroupFlete" name="formGroupFlete" style="display: contents;" method="post"
+          [formGroup]="formGroupFlete">
+          <h1>{{ modo === 'agregar' ? 'Agregar' : 'Modificar' }} Flete</h1>
+          <div id="personal" class="datosFlete">
+            <h3>Sucursal</h3>
+            <div id="buscarDatosflete">
+              <mat-form-field>
+                <input matInput type="text" class="form-control sucursal" id="idSucursal" [value]="defaultSatelite"
+                  formControlName="idSucursal" [placeholder]='placeholderSucursal' [matAutocomplete]="autoSucursal"
+                  placeholder="Buscar por nombre" (input)="onInputSucursales($event)">
+                <mat-autocomplete #autoSucursal [displayWith]="displayFn">
+                  <mat-option *ngFor="let sucursal of filteredSucursales" [value]="sucursal">
+                    {{ sucursal.nombre }}
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
             </div>
           </div>
-        </div>
+          <div id="usuario" class="datosFlete">
+            <h3>Zona</h3>
+            <mat-form-field>
+              <input matInput type="text" class="form-control sucursal" id="zona" formControlName="zona"
+                [placeholder]="placeholderSucursal" [matAutocomplete]="zona" (input)="onInputZonas($event)">
+              <mat-autocomplete #zona [displayWith]="displayFnZonas">
+                <mat-option *ngFor="let zonas of filteredZonas" [value]="zonas">
+                  {{ zonas.nombre }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+          </div>
+          <div id="respuesta" class="datosFlete">
+            <h3>Flete optimo</h3>
+            <input type="text" id="flete" formControlName="flete" class="form-control" (input)="onInput($event)" (keypress)="onKeyPress($event)">
+          </div>
+          <div id="circuitos" *ngIf="ngSelect">
+            <h3>Circuitos</h3>
+            <ng-select2 [data]="exampleData" [options]="options" [width]="'500'" id="circuitos" formControlName="circuitos" [(ngModel)]="value">
+            </ng-select2></div>
+            <div class="form-group" style="width: 100%;">
+              <h3>Estatus</h3>
+              <div class="switch-group" style="font-size: 0.8em;pointer-events: none;" [style.pointerEvents]="isDivBlocked ? 'none' : 'auto'">
+                <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
+                <label class="switch">
+                  <input type="checkbox" name="estatus" id="estatus" formControlName="estatus"
+                    (change)="toggleCheckbox()">
+                  <span class="slider round"></span>
+                </label>
+                <label style="padding: 0 0 0 1em;" for="activo">Activado</label>
+              </div>
+          </div>
+        </form>
       </div>
     </div>
     <div id="botonesFleteBox">
-      <button type="button" class="btn btn-primary">Guardar</button>
-      <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
-    </div>
-    <br>
-  </ng-template>
-
-  <ng-template #modificarglete>
-    <div id="datosFlete">
-      <div id="datosFleteBox">
-        <h1>Modificar Flete</h1>
-        <div id="personal" class="datosFlete">
-          <h3>Sucursal</h3>
-          <div id="buscarDatosflete">
-            <input type="text" class="form-control"><span class="input-group-text"
-              id="basic-addon1"><mat-icon>search</mat-icon></span>
-          </div>
-        </div>
-        <div id="usuario" class="datosFlete">
-          <h3>Zona</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div id="respuesta" class="datosFlete">
-          <h3>Flete optimo</h3>
-          <input type="text" class="form-control">
-        </div>
-        <div id="multiselectBox" class="card flex justify-content-center">
-          <p-multiSelect [options]="cities" [(ngModel)]="selectedCities" defaultLabel="Select a City" optionLabel="name"
-            display="chip" panelClass="my-panel-class"></p-multiSelect>
-        </div>
-        <div class="estatus">
-          <div class="form-group" style="width: 100%;">
-            <h3>Estatus</h3>
-            <div class="switch-group" style="font-size: 0.8em;">
-              <label style="padding: 0 1em;" for="inactivo">Inactivo</label>
-              <label class="switch">
-                <input type="checkbox" name="estatus">
-                <span class="slider round"></span>
-              </label>
-              <label style="padding: 0 0 0 1em;" for="activo">Activo</label>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div id="botonesFleteBox">
-      <button type="button" class="btn btn-primary">Guardar</button>
+      <button type="button" class="btn btn-primary" (click)="guardarFlete()">Guardar</button>
       <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
     </div>
     <br>

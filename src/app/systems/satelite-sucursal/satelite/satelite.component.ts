@@ -369,12 +369,12 @@ export class SateliteComponent implements OnInit {
     this.isDisabled=false;
     this.isDivBlocked=false
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
-      this.inputValue = response.idOficinaSatelite;
-      this.placeholderText = response.nombreSatelite;
-      this.defaultSatelite = response.idOficinaPertenece;
-      this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
-      this.placeholderSucursal = response.nombrePertenece;
-      this.estatus=response.estatus;
+    this.inputValue = response.idOficinaSatelite;
+    this.placeholderText = response.nombreSatelite;
+    this.defaultSatelite = response.idOficinaPertenece;
+    this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
+    this.placeholderSucursal = response.nombrePertenece;
+    this.estatus=response.estatus;
       this.openDialog();
     }, (error: any) => {
       this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);

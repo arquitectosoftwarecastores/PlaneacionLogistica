@@ -95,7 +95,7 @@ export class PrincipalPlaneacionComponent {
   idCedisLocal!: number;
   mostrarColumna!: boolean;
   mostrarBoton = false;
-
+  isLoading=false;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogCorte') dialogCorte!: TemplateRef<any>;
@@ -416,7 +416,7 @@ export class PrincipalPlaneacionComponent {
   }
 
   buscar() {
-
+    this.isLoading=true;
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
     const fechaFinal = this.formGroupFiltro.get('fechaFin').value;
     const zonaInfluencia = this.formGroupFiltro.get('zona').value;
@@ -502,6 +502,7 @@ export class PrincipalPlaneacionComponent {
         this.paginator.pageSize = 5;
         this.dataSource.sort = this.tablaPlaneacionSort;
         this.mostrarBoton = true;
+        this.isLoading=false;
       });
       columnasOcultas.forEach((columna) => {
         if (!this.displayedColumns.includes(columna)) {
@@ -528,8 +529,13 @@ export class PrincipalPlaneacionComponent {
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
-              this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
               this.mostrarBoton = true;
+              if(local==0){
+                this.isLoading=false;
+
+                this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+              }
+
             },
             (error: any) => {
               this.mostrarBoton = false;
@@ -556,6 +562,7 @@ export class PrincipalPlaneacionComponent {
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
               this.mostrarBoton = true;
+              this.isLoading=false;
               this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
             },
             (error: any) => {
@@ -590,6 +597,7 @@ export class PrincipalPlaneacionComponent {
             this.dataSource.paginator = this.paginator;
             this.paginator.pageSize = 5;
             this.dataSource.sort = this.tablaPlaneacionSort;
+            this.isLoading=false;
             this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
           },
           (error: any) => {
@@ -616,6 +624,7 @@ export class PrincipalPlaneacionComponent {
   }
 
   guardarCorte() {
+    this.isLoading=true;
     console.log(this.dataSource.filteredData.slice());
 
     if(this.dataSource.data.length<=0){
@@ -658,6 +667,7 @@ export class PrincipalPlaneacionComponent {
       }
       this.consultaCorteService.setCorte(corte).subscribe(
         (success: any) => {
+          this.isLoading=false;
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
           this.mostrarBoton=false;
         },
