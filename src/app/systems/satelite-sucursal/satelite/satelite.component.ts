@@ -16,7 +16,7 @@ import { satelite } from 'src/app/interfaces/satelite';
 import { cedis } from 'src/app/interfaces/oficina';
 import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 export interface UserData {
-  numero: string;
+  numero: string;z
   personal: string;
   sistema: string;
   tipoUsuario: string;
@@ -34,7 +34,7 @@ export interface UserData {
     { provide: MatPaginatorIntl, useValue: CustomPaginator() }
   ]
 })
-export class SateliteComponent implements OnInit {
+export class SateliteComponent implements OnInit   {
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -77,12 +77,10 @@ export class SateliteComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
   @ViewChild('dialogAgregar') dialogAgregar!: TemplateRef<any>;
-  @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
+  @ViewChild('tablaSateliteSort', { static: true }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
 
-  agregar: any;
-  modificar: any;
   constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
     public snackBar: MatSnackBar, private router: Router, private authService: AuthService,private oficinaService: oficinasService)
     {}
@@ -347,6 +345,7 @@ export class SateliteComponent implements OnInit {
     this.placeholderSucursal = '';
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
+    this.isDivBlocked=true;
     this.estatus=1;
     this.isDivBlocked=true;
     this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
