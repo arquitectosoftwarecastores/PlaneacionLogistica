@@ -1,5 +1,5 @@
 import { Component, TemplateRef, ViewChild, OnInit } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,6 +9,7 @@ import { AuthService } from 'src/app/authentication/login/auth.service';
 import { cortesPlaneacion } from 'src/app/interfaces/cortes';
 import { consultaCorteService } from '../../../services/consultaCorte';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 export interface UserData {
   numero: string;
   personal: string;
@@ -17,12 +18,13 @@ export interface UserData {
   roles: string;
 }
 
-/** Constants used to fill up our data base. */
-
 @Component({
   selector: 'app-consulta-corte',
   templateUrl: './consulta-corte.component.html',
-  styleUrls: ['./consulta-corte.component.css']
+  styleUrls: ['./consulta-corte.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
 export class ConsultaCorteComponent implements OnInit {
 
@@ -67,10 +69,8 @@ export class ConsultaCorteComponent implements OnInit {
     private formBuilder: FormBuilder, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-
     const SISTEMA: number = 14;
     const MODULO: number = 79;
-
     this.formGroupFiltro = new FormGroup({
       fechaInicio: new FormControl(),
       fechafin: new FormControl()
@@ -83,7 +83,6 @@ export class ConsultaCorteComponent implements OnInit {
       // Si se selecciona una fecha de inicio, ajustar la fecha de fin para que tenga un mes de diferencia
       if (selectedDate) {
         const fechaFin = new Date(selectedDate);
-
         fechaFin.setMonth(fechaFin.getMonth() - 1, fechaFin.getDate());
 
       }
@@ -99,7 +98,7 @@ export class ConsultaCorteComponent implements OnInit {
       }
     });
 
-
+    //Validar los permisos que tiene el usuario en el modulo
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
@@ -125,93 +124,93 @@ export class ConsultaCorteComponent implements OnInit {
     }
 
 
-
+    //Obetner los parametros de la ruta
     this.route.params.subscribe((params: { [x: string]: any; }) => {
       this.fechaInicio = params['fechaInicio'];
       this.fechaFin = params['fechaFin'];
-      this.oficina = params['oficina'];
     });
 
-    const filtro = {
-      "fechaInicio": this.fechaInicio,
-      "fechaFin": this.fechaFin,
-      "oficina": this.oficina
-    }
+    const pattern = /^\d{4}-\d{2}-\d{2}$/;
+    const inicioValid = pattern.test(this.fechaInicio);
+    const finValid = pattern.test(this.fechaFin);
 
-    console.log(filtro);
-    let mensajeConsulta = '';
-    if (this.obtenerIdOficina() == '1100') {
-      this.consultaCorteService.getAllCortes(filtro).subscribe(
-        (success: any) => {
-          console.log(success);
-          this.isLoading = false;
-          this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
-          this.dataSource.paginator = this.paginator;
-          this.paginator.pageSize = 5;
-          this.dataSource.sort = this.tablaCortesSort;
-          if (this.dataSource.data.length > 0) {
-            mensajeConsulta = '.';
-          } else {
-            mensajeConsulta = ' pero no se encontraron registros.';
-          }
-          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
-        },
-        (error: any) => {
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
-        });
+    if (!inicioValid || !finValid) {
+      this.router.navigate(['/home/inicio']);
     } else {
-      this.consultaCorteService.getCortesOficinas(filtro).subscribe(
-        (success: any) => {
-          console.log(success);
-          this.isLoading = false;
-          this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
-          this.dataSource.paginator = this.paginator;
-          this.paginator.pageSize = 5;
-          this.dataSource.sort = this.tablaCortesSort;
-          if (this.dataSource.data.length > 0) {
-            mensajeConsulta = '.';
-          } else {
-            mensajeConsulta = ' pero no se encontraron registros.';
-          }
-          this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
-        },
-        (error: any) => {
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
-        });
+      const filtro = {
+        "fechaInicio": this.fechaInicio,
+        "fechaFin": this.fechaFin,
+        "oficina": this.obtenerIdOficina()
+      }
+
+      let mensajeConsulta = '';
+      //buscar los cortes por oficina.
+      if (this.obtenerIdOficina() == '1100') {
+        this.consultaCorteService.getAllCortes(filtro).subscribe(
+          (success: any) => {
+            console.log(success);
+            this.isLoading = false;
+            this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
+            this.dataSource.paginator = this.paginator;
+            this.paginator.pageSize = 5;
+            this.dataSource.sort = this.tablaCortesSort;
+            if (this.dataSource.data.length > 0) {
+              mensajeConsulta = '.';
+            } else {
+              mensajeConsulta = ' pero no se encontraron registros.';
+            }
+            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+          },
+          (error: any) => {
+            this.isLoading = false;
+            this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+          });
+      } else {
+        //Buscar todos los cortes
+        this.consultaCorteService.getCortesOficinas(filtro).subscribe(
+          (success: any) => {
+            console.log(success);
+            this.isLoading = false;
+            this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
+            this.dataSource.paginator = this.paginator;
+            this.paginator.pageSize = 5;
+            this.dataSource.sort = this.tablaCortesSort;
+            if (this.dataSource.data.length > 0) {
+              mensajeConsulta = '.';
+            } else {
+              mensajeConsulta = ' pero no se encontraron registros relacionados en la oficina actual.';
+            }
+            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+          },
+          (error: any) => {
+            this.isLoading = false;
+            if(error.status === 404){
+              this.openSnackBar('Se realizo la consulta de manera exitosa pero no se encuentran registros relacionados en la oficina actual.', '✅', 3000);
+            }else{
+              this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+            }
+
+          });
+      }
+      this.inicioFiltro = (date: Date | null): boolean => {
+        if (!date) return false;
+        const today = new Date();
+        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+
+        return date >= lastMonth && date <= today;
+      };
+      this.FinFiltro = (date: Date | null): boolean => {
+        if (!date) return false;
+        const today = new Date();
+        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+        return date >= lastMonth && date <= today;
+      }
     }
-    this.inicioFiltro = (date: Date | null): boolean => {
-      if (!date) return false;
-
-      const today = new Date();
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-
-      return date >= lastMonth && date <= today;
-    };
-    this.FinFiltro = (date: Date | null): boolean => {
-      if (!date) return false;
-
-      const today = new Date();
-      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-      return date >= lastMonth && date <= today;
-    };
-
   }
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
-  }
-  openDialog(): void {
-    const dialogRef = this.dialog.open(this.dialogTemplate);
-  }
-
-  openDialogPermisos(): void {
-    const dialogRol = this.dialog.open(this.dialogRoles);
-  }
-
-  oncloseDialog(): void {
-    this.dialog.closeAll();
-
   }
 
   validaInformacion(dato: any): boolean {
@@ -225,35 +224,25 @@ export class ConsultaCorteComponent implements OnInit {
 
 
   detalle(detalle: string) {
-    //const fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
-    //const fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
-    console.log(detalle);
     let fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
     let fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
-    console.log(fechaFinValue);
-    if (fechaInicioValue!=' ' && fechaFinValue!=' ') {
+    if (fechaInicioValue != ' ' && fechaFinValue != ' ') {
       const fechaInicio = new Date(fechaInicioValue);
       const fechaFin = new Date(fechaFinValue);
 
       const formattedFechaInicio = `${fechaInicio.getFullYear()}-${(fechaInicio.getMonth() + 1).toString().padStart(2, '0')}-${fechaInicio.getDate().toString().padStart(2, '0')}`;
       const formattedFechaFin = `${fechaFin.getFullYear()}-${(fechaFin.getMonth() + 1).toString().padStart(2, '0')}-${fechaFin.getDate().toString().padStart(2, '0')}`;
 
-      const idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
-      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + idOficinaActual+'/'+detalle]);
-    }else{
+      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + detalle]);
+    } else {
       let fechaInicioValue = new Date();
       let fechaFinValue = new Date();
 
       const fechaInicio = new Date(fechaInicioValue);
       const fechaFin = new Date(fechaFinValue);
-
       const formattedFechaInicio = `${fechaInicio.getFullYear()}-${(fechaInicio.getMonth() + 1).toString().padStart(2, '0')}-${fechaInicio.getDate().toString().padStart(2, '0')}`;
       const formattedFechaFin = `${fechaFin.getFullYear()}-${(fechaFin.getMonth() + 1).toString().padStart(2, '0')}-${fechaFin.getDate().toString().padStart(2, '0')}`;
-      console.log("aqui")
-      console.log(formattedFechaInicio);
-      console.log(formattedFechaFin);
-      const idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
-      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + idOficinaActual+'/'+detalle]);
+      this.router.navigate(['home/flete/DetallesCorte/' + formattedFechaInicio + '/' + formattedFechaFin + '/' + detalle]);
     }
 
   }
@@ -264,27 +253,22 @@ export class ConsultaCorteComponent implements OnInit {
   }
 
   buscar() {
-
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
     const fechaFinal = this.formGroupFiltro.get('fechaFin').value;
-
-
     let oficina = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
     const filtro = {
       "fechaInicio": fechaInicio,
       "fechaFin": fechaFinal,
       "oficina": oficina
     }
-    console.log("consultaCorte");
-    console.log(filtro)
     let mensajeConsulta = '';
-    if(fechaInicio==null){
+    if (fechaInicio == null) {
       this.openSnackBar('Debe seleccionar una fecha en fecha inicio.', '⛔', 3000);
-    }else if(fechaFinal==null){
+    } else if (fechaFinal == null) {
       this.openSnackBar('Debe seleccionar una fecha en fecha fin.', '⛔', 3000);
-    }else if (fechaInicio > fechaFinal) {
+    } else if (fechaInicio > fechaFinal) {
       this.openSnackBar('La fecha inicio no puede ser mayor a fecha fin', '⛔', 3000);
-    }else if (this.obtenerIdOficina() == '1100') {
+    } else if (this.obtenerIdOficina() == '1100') {
       this.isLoading = true;
       this.consultaCorteService.getAllCortes(filtro).subscribe(
         (success: any) => {
@@ -303,7 +287,7 @@ export class ConsultaCorteComponent implements OnInit {
         },
         (error: any) => {
           this.isLoading = false;
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+          this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     } else {
       this.isLoading = true;
@@ -324,17 +308,31 @@ export class ConsultaCorteComponent implements OnInit {
         },
         (error: any) => {
           this.isLoading = false;
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+          this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     }
   }
-
+  /**
+    * cargarDatos: Funcion para el evento del filtro de la tabla tipo venta
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   onFechaInicioChange(event: any) {
     return event.value;
   }
   onFechaFinChange(event: any) {
     return event.value;
   }
+
+  /**
+    * cargarDatos: Funcion para el filtrado de la tabla
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
 
   applyFilter() {
     const filters = {
@@ -351,18 +349,21 @@ export class ConsultaCorteComponent implements OnInit {
       const fechaModMatch = data.fechaMod?.toLowerCase().includes(filtersObj.fechaMod?.toLowerCase() || '');
       const horaModMatch = data.horaMod?.toString().toLowerCase().includes(filtersObj.horaMod?.toLowerCase() || '');
       const nombreTipoVentaMatch = this.checkNombreTipoVenta(data, filtersObj.nombreTipoVenta);
-
       const nombreTipoCorteMatch = this.checkNombreTipoUbicacion(data, filtersObj.nombreTipoCorte);
-
       return idCorteMatch && fechaModMatch && horaModMatch && nombreTipoVentaMatch && nombreTipoCorteMatch;
     };
 
     this.dataSource.filter = JSON.stringify(filters);
   }
-
+  /**
+    * cargarDatos: Funcion para el evento del filtro de la tabla tipo venta
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   checkNombreTipoVenta(data: any, filterValue: string): boolean {
     const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
-
     if (lowercaseFilterValue === 'local') {
       return data.nombreTipoVenta?.toLowerCase() === 'local' && !filterValue.includes(',');
     } else if (lowercaseFilterValue === 'agencia' || lowercaseFilterValue === 'satelite') {
@@ -372,32 +373,53 @@ export class ConsultaCorteComponent implements OnInit {
       return normalizedNombreTipoVenta.includes(lowercaseFilterValue);
     }
   }
-
+  /**
+    * cargarDatos: Funcion para el evento del filtro de la tabla tipo de ubicacion
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   checkNombreTipoUbicacion(data: any, filterValue: string): boolean {
     const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
-
     if (lowercaseFilterValue === 'piso') {
-      return data.nombreTipoVenta?.toLowerCase() === 'piso' && !filterValue.includes(',');
+      return data.nombreTipoCorte?.toLowerCase() === 'piso' && !filterValue.includes(',');
     } else if (lowercaseFilterValue === 'virtual') {
-      return data.nombreTipoVenta?.toLowerCase() === lowercaseFilterValue;
+      return data.nombreTipoCorte?.toLowerCase() === lowercaseFilterValue;
     } else {
-      const normalizedNombreTipoVenta = this.removeAccents(data.nombreTipoVenta?.toLowerCase() || '');
-      return normalizedNombreTipoVenta.includes(lowercaseFilterValue);
+      const normalizedNombreTipocorte= this.removeAccents(data.nombreTipoCorte?.toLowerCase() || '');
+      return normalizedNombreTipocorte.includes(lowercaseFilterValue);
     }
   }
-
-  // ...
-
-
+  /**
+    * cargarDatos: Funcion para borrar los acentos del texto
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   removeAccents(text: string): string {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
 
 
+/**
+    * cargarDatos: Funcion para limpiar el formulario y los filtros de la tabla
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
 
   limpiarFormulario(): void {
     this.formGroupFiltro.reset();
     this.dataSource = new MatTableDataSource<cortesPlaneacion>(); // Asignar un nuevo dataSource vacío
     this.dataSource.sort = this.sort;
+    this.idCorteFiltro.setValue('');
+    this.fechaModFiltro.setValue('');
+    this.horaModFiltro.setValue('');
+    this.nombreTipoVentaFiltro.setValue('');
+    this.nombreTipoCorteFiltro.setValue('');
+    this.applyFilter();
   }
 }

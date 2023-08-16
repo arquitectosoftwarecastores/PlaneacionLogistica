@@ -1,12 +1,18 @@
 <br>
-<div >
+<div>
+  <button class="btn btn-primary" (click)="regresar();" style="height: 40px;"><mat-icon>arrow_back</mat-icon></button>
+</div>
+<div class="d-flex justify-content-center">
   <h1 id="tituloConsultaCorte">CONSULTA CORTE</h1>
 </div>
 <br>
 <br>
 <div>
   <!--<button class="btn btn-primary">Regresar</button>-->
-  <h1>{{corte}}</h1>
+  <div class="d-flex justify-content-center">
+    <h1>{{corte}}</h1>
+  </div>
+
   <div class="d-flex justify-content-center">
     <div class="table-responsive">
       <table class="table table-striped">
@@ -19,7 +25,7 @@
         </thead>
         <tbody>
           <tr>
-            <td>{{ fechaInicio }}</td>
+            <td>{{ fechaInicio| date:'dd/MM/yyyy' }}</td>
             <td>{{ hora }}</td>
             <td>{{ tipoCorte }}</td>
           </tr>
@@ -28,13 +34,11 @@
     </div>
   </div>
   <br>
-  <div>
-    <button class="btn btn-primary" (click)="regresar();" style="height: 40px;"><mat-icon>arrow_back</mat-icon></button>
-  </div>
+
   <br>
-  <div style="display: flex;">
+  <div  class="d-flex justify-content-center">
     <label for="descripcion" style="font-family: fantasy;font-size: larger;">Accion:</label>
-    <textarea id="descripcion" name="descripcion" rows="4" cols="100" disabled style="margin-left: 10px;">{{descripcion}}</textarea>
+    <textarea id="descripcion" name="descripcion" rows="4" cols="100" disabled style="margin-left: 10px;" >{{descripcion}}</textarea>
   </div>
 
 </div>
@@ -70,7 +74,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let row">{{row.flete }} </td>
-        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('flete')=== 0 ? ' ' : calcularSumatoria('flete')}}
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef>{{ calcularSumatoria('flete')=== 0 ? ' ' : (calcularSumatoria('flete')| currency:'USD':'symbol':'1.2-2')}}
         </td>
       </ng-container>
       <ng-container matColumnDef="cdp">
@@ -81,7 +85,7 @@
           </div>
         </th>
         <td mat-cell *matCellDef="let row">{{row.cdp }} </td>
-        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('cdp')=== 0 ? ' ' : calcularSumatoria('cdp')}} </td>
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('cdp')=== 0 ? ' ' : (calcularSumatoria('cdp') | currency:'USD':'symbol':'1.2-2')}}</td>
       </ng-container>
       <ng-container matColumnDef="bulto">
         <th mat-header-cell *matHeaderCellDef> Bultos
@@ -95,14 +99,14 @@
         </td>
       </ng-container>
       <ng-container matColumnDef="volumen">
-        <th mat-header-cell *matHeaderCellDef> Volumen
+        <th mat-header-cell *matHeaderCellDef> Volumen(m³)
           <div>
             <input type="text" class="form-control" [formControl]="valumenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
             (input)="applyFilter();">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.volumen }} </td>
-        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('volumen')=== 0 ? ' ' : calcularSumatoria('volumen')}}
+        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef> {{ calcularSumatoria('volumen')=== 0 ? ' ' : (calcularSumatoria('volumen')+'m³')}}
         </td>
       </ng-container>
       <ng-container matColumnDef="queContiene">

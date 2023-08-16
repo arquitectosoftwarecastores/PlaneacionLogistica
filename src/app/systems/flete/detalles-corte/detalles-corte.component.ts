@@ -4,15 +4,19 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { DatosTalon } from 'src/app/interfaces/datosTalon';
 import { consultaCorteService } from '../../../services/consultaCorte';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 
 @Component({
   selector: 'app-detalles-corte',
   templateUrl: './detalles-corte.component.html',
-  styleUrls: ['./detalles-corte.component.css']
+  styleUrls: ['./detalles-corte.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
 export class DetallesCorteComponent {
   displayedColumns: string[] = ['claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
@@ -26,6 +30,7 @@ export class DetallesCorteComponent {
   tipoCorte!: string;
   isLoading: boolean = true;
   idCorte!:string;
+  fleteSum: number = 0;
   public dataSource = new MatTableDataSource<DatosTalon>();
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -53,10 +58,14 @@ export class DetallesCorteComponent {
           const detalle = JSON.parse(tabla);
           console.log(detalle);
           this.corte = success.idCorte;
-          this.descripcion = success.accion;
+
+          if(success.accion==null){
+            this.descripcion = '';
+          }else{
+            this.descripcion = success.accion;
+          }
           this.hora = success.horaMod;
           this.tipoCorte = success.nombreTipoVenta;
-
           this.dataSource = new MatTableDataSource<DatosTalon>(detalle as DatosTalon[]);
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
@@ -68,13 +77,6 @@ export class DetallesCorteComponent {
           this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     });
-
-    if (datosTalonFromStorage) {
-      this.dataSource = new MatTableDataSource<DatosTalon>(JSON.parse(datosTalonFromStorage));
-    } else {
-      this.dataSource = new MatTableDataSource<DatosTalon>([]);
-    }
-
 
   }
 
@@ -121,16 +123,15 @@ export class DetallesCorteComponent {
       const bultoMatch = data.bulto?.toString().toLowerCase().includes(filtersObj.bulto?.toLowerCase() || '');
       const volumenMatch = data.volumen?.toString().toLowerCase().includes(filtersObj.volumen?.toLowerCase() || '');
       const documentaMatch = data.nombreOficinaDocumenta?.toLowerCase().includes(filtersObj.documenta?.toLowerCase() || '');
+      const contieneMatch = data.queContiene?.toString().toLowerCase().includes(filtersObj.queContiene?.toLowerCase() || '');
       const origenMatch = data.origen?.toLowerCase().includes(filtersObj.origen?.toLowerCase() || '');
       const tipoMatch = data.tipo?.toLowerCase().includes(filtersObj.tipo?.toLowerCase() || '');
       const ventaMatch = data.venta?.toLowerCase().includes(filtersObj.venta?.toLowerCase() || '');
       const destinoMatch = data.destino?.toLowerCase().includes(filtersObj.destino?.toLowerCase() || '');
       const tipoGuiaMatch = data.tipoGuia?.toLowerCase().includes(filtersObj.tipoGuia?.toLowerCase() || '');
       const noEconomicoMatch = data.noEconomico?.toString().toLowerCase().includes(filtersObj.noEconomico?.toLowerCase() || '');
-
-      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && documentaMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
+      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && documentaMatch && contieneMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
     };
-
     this.dataSource.filter = JSON.stringify(filters);
   }
 
@@ -142,6 +143,7 @@ export class DetallesCorteComponent {
       return false;
     }
   }
+
   calcularSumatoria(columna: keyof DatosTalon): number {
     const talonesCorte = this.dataSource.filteredData;
     const sum = talonesCorte.slice().reduce((sum, currentRow) => {
@@ -157,7 +159,11 @@ export class DetallesCorteComponent {
     });
   }
   regresar() {
-    this.route.navigate(['home/flete/consultaCorte/' + this.fechaInicio + '/' + this.fechaFin + '/' + this.oficina]);
+    this.route.navigate(['home/flete/consultaCorte/' + this.fechaInicio + '/' + this.fechaFin ]);
   }
 
+
+  removeAccents(text: string): string {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
 }

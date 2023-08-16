@@ -469,6 +469,7 @@ export class SateliteComponent implements OnInit {
       this.paginator.pageSize = 5;
       this.dataSource.sort = this.tablaSateliteSort;
       this.isLoading = false;
+      this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
     },
       (error: any) => {
         this.openSnackBar('Hubo un error al cargar los datos', '⛔', 3000);
