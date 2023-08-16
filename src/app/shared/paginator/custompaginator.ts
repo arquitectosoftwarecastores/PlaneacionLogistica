@@ -20,5 +20,4 @@ export function CustomPaginator() {
 
     return `${startIndex + 1} - ${endIndex} de ${length}`;
   };
-  return customPaginatorIntl;
 }
