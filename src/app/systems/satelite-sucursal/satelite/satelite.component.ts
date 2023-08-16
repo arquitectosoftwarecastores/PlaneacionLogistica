@@ -10,7 +10,6 @@ import { sateliteService } from 'src/app/services/satelite.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { Pipe, PipeTransform } from '@angular/core';
 import { sucursales_satelite } from 'src/app/interfaces/sucursales_satelite';
 import { satelite } from 'src/app/interfaces/satelite';
 import { cedis } from 'src/app/interfaces/oficina';
