@@ -213,7 +213,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-11
    */
   seleccionarTodosVenta() {
     this.ventasSeleccionados = !this.ventasSeleccionados;
@@ -257,7 +257,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-11
    */
 
   seleccionarTodosTipo() {
@@ -299,7 +299,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-11
    */
 
   fechaInicio() {
@@ -333,7 +333,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-14
    */
 
   onInputSucursales(event: Event): void {
@@ -346,7 +346,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-14
    */
 
   onInputZonas(event: Event): void {
@@ -360,7 +360,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-14
    */
 
   formatDate(date: any) {
@@ -374,7 +374,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-14
    */
   openDialog(): void {
     this.formGroupCorte.reset();
@@ -385,7 +385,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-14
    */
   oncloseDialog(): void {
     this.dialog.closeAll();
@@ -397,7 +397,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   displayFn(sucursal: any): string {
     this.selectedSatelite = sucursal?.id;
@@ -408,7 +408,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   displayFnZonas(zona: any): string {
     if (zona) {
@@ -423,7 +423,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   filtrarDatosCedis(query: string): any[] {
     let filtered: any[] = [];
@@ -442,7 +442,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   filtrarDatosZonasInfluencia(query: string): any[] {
     let filteredZona: any[] = [];
@@ -462,7 +462,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-16
    */
   onFechaInicioChange(event: any) {
     return event.value;
@@ -477,7 +477,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-16
    */
 
   buscar() {
@@ -741,7 +741,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-16
    */
 
   calcularSumatoria(columna: keyof DatosTalon): number {
@@ -758,7 +758,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-16
    */
 
   validaInformacion(dato: any): boolean {
@@ -775,7 +775,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-17
    */
   guardarCorte() {
     if (this.dataSource.data.length <= 0) {
@@ -838,7 +838,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
 
   obtenerIdPersonal(): string {
@@ -851,7 +851,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   obtenerIdOficina(): string {
     let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
@@ -863,7 +863,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
 
   bloquearOpcionPiso() {
@@ -917,7 +917,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
   onVentaSelectionChange() {
     const isLocalSelected = this.venta.value.some((venta: { nombre: string; }) => venta.nombre === 'Local');
@@ -968,7 +968,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
 
   applyFilter() {
@@ -1021,7 +1021,7 @@ export class PrincipalPlaneacionComponent {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-15
    */
 
   limpiarFormulario(): void {

@@ -96,7 +96,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-22
    */
   applyFilter() {
     const filters = {
@@ -143,7 +143,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-22
    */
 
   validaInformacion(dato: any): boolean {
@@ -160,7 +160,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-23
    */
 
   calcularSumatoria(columna: keyof DatosTalon): number {
@@ -177,7 +177,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-24
    */
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
@@ -191,7 +191,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-24
    */
 
   regresar() {
@@ -204,7 +204,7 @@ export class DetallesCorteComponent  implements OnInit{
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-24
    */
   removeAccents(text: string): string {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');

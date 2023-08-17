@@ -212,7 +212,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-16
    */
 
   openSnackBar(message: string, action: string, tiempo: number): void {
@@ -227,7 +227,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-17
    */
   validaInformacion(dato: any): boolean {
     if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
@@ -244,7 +244,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-17
    */
   detalle(detalle: string) {
     let fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
@@ -275,7 +275,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-17
    */
   obtenerIdOficina(): string {
     let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
@@ -288,7 +288,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
   buscar() {
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
@@ -353,7 +353,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
   onFechaInicioChange(event: any) {
     return event.value;
@@ -367,7 +367,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
 
   applyFilter() {
@@ -396,7 +396,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
   checkNombreTipoVenta(data: any, filterValue: string): boolean {
     const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
@@ -414,7 +414,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
   checkNombreTipoUbicacion(data: any, filterValue: string): boolean {
     const lowercaseFilterValue = this.removeAccents(filterValue.toLowerCase());
@@ -432,7 +432,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-18
    */
   removeAccents(text: string): string {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -444,7 +444,7 @@ export class ConsultaCorteComponent implements OnInit {
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
-    * @date 2023-07-05
+    * @date 2023-07-21
    */
 
   limpiarFormulario(): void {
