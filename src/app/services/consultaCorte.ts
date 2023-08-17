@@ -38,7 +38,6 @@ export class consultaCorteService {
 
   getFindbyCorte(corte:string){
     const corteDetalle=corte.replace(/"/g, '');
-    console.log(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getByIdCorte/`+corteDetalle);
     return this.http.get<cortesPlaneacion[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getByIdCorte/`+corteDetalle);
   }
 

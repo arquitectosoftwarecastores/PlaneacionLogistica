@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -18,7 +18,7 @@ import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
     { provide: MatPaginatorIntl, useValue: CustomPaginator() }
   ]
 })
-export class DetallesCorteComponent {
+export class DetallesCorteComponent  implements OnInit{
   displayedColumns: string[] = ['claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
     'destino', 'tipoGuia', 'noEconomico'];
   corte!: string;
@@ -37,13 +37,14 @@ export class DetallesCorteComponent {
   @ViewChild('tablaDetalleSort', { static: false }) set tablaDetalleSort(tablaDetalleSort: MatSort) {
     if (this.validaInformacion(tablaDetalleSort)) this.dataSource.sort = tablaDetalleSort;
   }
+
   constructor(public snackBar: MatSnackBar, private consultaCorteService: consultaCorteService, private location: Location, private router: ActivatedRoute, private route: Router) {
+  }
+
+  ngOnInit(): void {
     const datosTalonFromStorage = localStorage.getItem('datosTalon');
-    console.log(datosTalonFromStorage);
     this.router.params.subscribe((params: { [x: string]: any }) => {
-      console.log(params);
       this.fechaInicio = params['fechaInicio'];
-      console.log(this.fechaInicio);
       this.fechaFin = params['fechaFin'];
       this.oficina = params['oficina'];
       this.idCorte=params['idCorte'];
@@ -52,11 +53,8 @@ export class DetallesCorteComponent {
       this.consultaCorteService.getFindbyCorte(this.idCorte!).subscribe(
         (success: any) => {
           this.isLoading = false;
-          console.log(success);
           const tabla=success.descripcionTabla;
-          console.log(tabla);
           const detalle = JSON.parse(tabla);
-          console.log(detalle);
           this.corte = success.idCorte;
 
           if(success.accion==null){
@@ -77,9 +75,7 @@ export class DetallesCorteComponent {
           this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     });
-
   }
-
 
   numeroTalonFiltro = new FormControl();
   tipoTalonFiltro = new FormControl();
@@ -95,7 +91,13 @@ export class DetallesCorteComponent {
   tipoGuiaFiltro = new FormControl();
   noEconomicoFiltro = new FormControl();
   DocumentaFiltro = new FormControl();
-
+  /**
+    * applyFilter: Funcion para el filtrado de la tabla
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   applyFilter() {
     const filters = {
       claTalon: this.numeroTalonFiltro.value,
@@ -135,6 +137,15 @@ export class DetallesCorteComponent {
     this.dataSource.filter = JSON.stringify(filters);
   }
 
+   /**
+    * validaInformacion: Funcion para validar la informacion
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
+
   validaInformacion(dato: any): boolean {
     if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
       return true;
@@ -143,6 +154,14 @@ export class DetallesCorteComponent {
       return false;
     }
   }
+/**
+    * calcularSumatoria: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
 
   calcularSumatoria(columna: keyof DatosTalon): number {
     const talonesCorte = this.dataSource.filteredData;
@@ -152,17 +171,41 @@ export class DetallesCorteComponent {
     }, 0);
     return parseFloat(sum.toFixed(2));
   }
-
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
   }
+
+  /**
+    * regresar: Funcion para regresar al modulo de consultaCorte
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
+
   regresar() {
     this.route.navigate(['home/flete/consultaCorte/' + this.fechaInicio + '/' + this.fechaFin ]);
   }
 
-
+  /**
+    *removeAccents: Funcion para remover los acentos
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   removeAccents(text: string): string {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }

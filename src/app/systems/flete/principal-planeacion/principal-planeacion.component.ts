@@ -164,7 +164,6 @@ export class PrincipalPlaneacionComponent {
       this.inputCedis = false;
       this.oficinasService.getOficina(oficinaUsuario).subscribe(response => {
         this.inputValueLocal = response.plaza.toLocaleUpperCase();
-        console.log(this.inputValueLocal);
       }, (error: any) => {
         this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
       });
@@ -210,7 +209,7 @@ export class PrincipalPlaneacionComponent {
   }
 
 /**
-    * cargarDatos: Funcion para seleccionar todas las opciones del mat-select tipos venta
+    * seleccionarTodosVenta: Funcion para seleccionar todas las opciones del mat-select tipos venta
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -254,7 +253,7 @@ export class PrincipalPlaneacionComponent {
   }
 
 /**
-    * cargarDatos: Funcion para seleccionar todas las opciones del mat-select tipos de ubicacion de los talones
+    * seleccionarTodosTipo: Funcion para seleccionar todas las opciones del mat-select tipos de ubicacion de los talones
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -295,8 +294,8 @@ export class PrincipalPlaneacionComponent {
       duration: tiempo
     });
   }
-/**
-    * cargarDatos: Funcion para obtener fechas del dia de actual y anterior
+  /**
+    * fechaInicio: Funcion para obtener fechas del dia de actual y anterior
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -330,7 +329,7 @@ export class PrincipalPlaneacionComponent {
     });
   }
   /**
-    * cargarDatos: Funcion para el evento del filtrado en el mat-input zonas
+    * onInputSucursales: Funcion para el evento del filtrado en el mat-input zonas
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -343,7 +342,7 @@ export class PrincipalPlaneacionComponent {
     this.filteredSucursales = this.filtrarDatosCedis(query);
   }
   /**
-    * cargarDatos: Funcion para el evento del filtrado en el mat-input cedis
+    * onInputZonas: Funcion para el evento del filtrado en el mat-input cedis
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -357,7 +356,7 @@ export class PrincipalPlaneacionComponent {
   }
 
 /**
-    * cargarDatos: Funcion para obtener formato de la fecha
+    * formatDate: Funcion para obtener formato de la fecha
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -371,7 +370,7 @@ export class PrincipalPlaneacionComponent {
     return `${year}-${month}-${day}`;
   }
 /**
-    * cargarDatos: Funcion para abrir modal de guardar corte
+    * openDialog: Funcion para abrir modal de guardar corte
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -382,7 +381,7 @@ export class PrincipalPlaneacionComponent {
     this.dialog.open(this.dialogCorte);
   }
 /**
-    * cargarDatos: Funcion para cerrar modal de guardar corte
+    * oncloseDialog: Funcion para cerrar modal de guardar corte
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -394,7 +393,7 @@ export class PrincipalPlaneacionComponent {
   }
 
   /**
-    * cargarDatos: Funcion de filtrado para mostrar la informacion en el mat-input de los cedis
+    * displayFn: Funcion de filtrado para mostrar la informacion en el mat-input de los cedis
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -405,7 +404,7 @@ export class PrincipalPlaneacionComponent {
     return sucursal ? sucursal.nombre : '';
   }
   /**
-    * cargarDatos: Funcion de filtrado para mostrar la informacion en el mat-input zonas de influencia
+    * displayFnZonas: Funcion de filtrado para mostrar la informacion en el mat-input zonas de influencia
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -420,7 +419,7 @@ export class PrincipalPlaneacionComponent {
     }
   }
 /**
-    * cargarDatos: Funcion para obtener el filtrado del mat-input de los cedis
+    * filtrarDatosCedis: Funcion para obtener el filtrado del mat-input de los cedis
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -439,7 +438,7 @@ export class PrincipalPlaneacionComponent {
     return filtered;
   }
   /**
-    * cargarDatos: Funcion para obtener el filtrado del mat-input zonas de influencia
+    * filtrarDatosZonasInfluencia: Funcion para obtener el filtrado del mat-input zonas de influencia
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -458,7 +457,7 @@ export class PrincipalPlaneacionComponent {
     return filteredZona;
   }
   /**
-    * cargarDatos: Funcion para obtener el valor de los may-input tipo date
+    * onFechaInicioChange, onFechaFinChange: Funcion para obtener el valor de los may-input tipo date
     *
     * @param fecha (string)
     * @return Date
@@ -473,7 +472,7 @@ export class PrincipalPlaneacionComponent {
     return event.value;
   }
   /**
-    * cargarDatos: Funcion para buscar los talones
+    * buscar: Funcion para buscar los talones
     *
     * @param fecha (string)
     * @return Date
@@ -635,7 +634,6 @@ export class PrincipalPlaneacionComponent {
           }else{
             this.fleteService.getPisoAgenciaSatelite(datosConsulta).subscribe(
               (success: any) => {
-                console.log(success);
                 tablaList1 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
                 this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
                 this.dataSource.paginator = this.paginator;
@@ -676,7 +674,6 @@ export class PrincipalPlaneacionComponent {
             (success: any) => {
               tablaList2 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
               this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
-              console.log(this.dataSource);
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
@@ -739,7 +736,7 @@ export class PrincipalPlaneacionComponent {
     }
   }
   /**
-    * cargarDatos: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
+    * calcularSumatoria: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
     *
     * @param fecha (string)
     * @return Date
@@ -756,7 +753,7 @@ export class PrincipalPlaneacionComponent {
     return parseFloat(sum.toFixed(2));
   }
   /**
-    * cargarDatos: Funcion para validar la informacion
+    * validaInformacion: Funcion para validar la informacion
     *
     * @param fecha (string)
     * @return Date
@@ -773,7 +770,7 @@ export class PrincipalPlaneacionComponent {
     }
   }
   /**
-    * cargarDatos: Funcion para guardar el corte de la lista de todos los talones encontrados y filtrados
+    * guardarCorte: Funcion para guardar el corte de la lista de todos los talones encontrados y filtrados
     *
     * @param fecha (string)
     * @return Date
@@ -836,7 +833,7 @@ export class PrincipalPlaneacionComponent {
   }
 
   /**
-    * cargarDatos: Funcion para obtener el idPersonal del usuario
+    * obtenerIdPersonal: Funcion para obtener el idPersonal del usuario
     *
     * @param fecha (string)
     * @return Date
@@ -849,7 +846,7 @@ export class PrincipalPlaneacionComponent {
     return usuarioJson.id;
   }
   /**
-    * cargarDatos: Funcion para obtener el idOficina del usuario
+    * obtenerIdOficina: Funcion para obtener el idOficina del usuario
     *
     * @param fecha (string)
     * @return Date
@@ -861,7 +858,7 @@ export class PrincipalPlaneacionComponent {
     return idoficinaJson.claveOficina;
   }
   /**
-    * cargarDatos: Funcion para cambiar las opciones de los tipo venta
+    * bloquearOpcionPiso: Funcion para cambiar las opciones de los tipo venta
     *
     * @param fecha (string)
     * @return Date
@@ -878,8 +875,6 @@ export class PrincipalPlaneacionComponent {
       } else {
         this.tiposSeleccionados = false;
       }
-      console.log(isPisoVirtual);
-
       if (isPisoVirtual && isPisoSelected == false) {
         this.ventaList = this.ventaList.filter((item) => item.nombre !== 'Local');
       } else {
@@ -904,7 +899,6 @@ export class PrincipalPlaneacionComponent {
           const localVenta = venta.find(item => item.nombre === 'Local');
           const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
           if (localVenta) {
-            console.log(ventaExiste);
             if (ventaExiste == false) {
               this.ventaList.push(localVenta);
             }
@@ -918,7 +912,7 @@ export class PrincipalPlaneacionComponent {
     }
   }
 /**
-    * cargarDatos: Funcion para cambiar las opciones de los tipo de ubicaciones de los talones
+    * onVentaSelectionChange: Funcion para cambiar las opciones de los tipo de ubicaciones de los talones
     *
     * @param fecha (string)
     * @return Date
@@ -969,7 +963,7 @@ export class PrincipalPlaneacionComponent {
   }
 
 /**
-    * cargarDatos: Funcion para aplicar el filtro en la tabla de pleaneacion principal
+    * applyFilter: Funcion para aplicar el filtro en la tabla de pleaneacion principal
     *
     * @param fecha (string)
     * @return Date
@@ -1022,7 +1016,7 @@ export class PrincipalPlaneacionComponent {
   }
 
   /**
-    * cargarDatos: Funcion para limpiar formulario para la busqueda de los talones.
+    * limpiarFormulario: Funcion para limpiar formulario para la busqueda de los talones.
     *
     * @param fecha (string)
     * @return Date

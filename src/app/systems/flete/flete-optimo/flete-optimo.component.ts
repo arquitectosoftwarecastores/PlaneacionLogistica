@@ -172,7 +172,6 @@ export class FleteOptimoComponent implements AfterViewInit {
   cargarDatos() {
     this.isLoading = true;
     this.fletesService.getFletesOptimo().subscribe((response: flete_optimo[]) => {
-      console.log(response);
       this.dataSource = new MatTableDataSource<flete_optimo>(response as flete_optimo[]);
       this.dataSource.paginator = this.paginator;
       this.paginator.pageSize = 5;

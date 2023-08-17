@@ -148,7 +148,6 @@ export class ConsultaCorteComponent implements OnInit {
       if (this.obtenerIdOficina() == '1100') {
         this.consultaCorteService.getAllCortes(filtro).subscribe(
           (success: any) => {
-            console.log(success);
             this.isLoading = false;
             this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
             this.dataSource.paginator = this.paginator;
@@ -169,7 +168,6 @@ export class ConsultaCorteComponent implements OnInit {
         //Buscar todos los cortes
         this.consultaCorteService.getCortesOficinas(filtro).subscribe(
           (success: any) => {
-            console.log(success);
             this.isLoading = false;
             this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
             this.dataSource.paginator = this.paginator;
@@ -207,12 +205,30 @@ export class ConsultaCorteComponent implements OnInit {
       }
     }
   }
+
+  /**
+    * openSnackBar: Funcion para ver los mensajes.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
+
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
   }
 
+   /**
+    * validaInformacion: cargarDatos: Funcion para validar la informacion
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   validaInformacion(dato: any): boolean {
     if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
       return true;
@@ -222,7 +238,14 @@ export class ConsultaCorteComponent implements OnInit {
     }
   }
 
-
+  /**
+    * detalle: Funcion para redireccionar al componente detalleCorteComponent
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   detalle(detalle: string) {
     let fechaInicioValue = this.formGroupFiltro.get('fechaInicio').value;
     let fechaFinValue = this.formGroupFiltro.get('fechaFin').value;
@@ -246,12 +269,27 @@ export class ConsultaCorteComponent implements OnInit {
     }
 
   }
-
+  /**
+    * obtenerIdOficina: Funcion para obtener el idOficina del usuario
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   obtenerIdOficina(): string {
     let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
     return idoficinaJson.claveOficina;
   }
 
+  /**
+    * buscar: Funcion para buscar los cortes por fecha seleccionada.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-05
+   */
   buscar() {
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
     const fechaFinal = this.formGroupFiltro.get('fechaFin').value;
@@ -273,7 +311,6 @@ export class ConsultaCorteComponent implements OnInit {
       this.consultaCorteService.getAllCortes(filtro).subscribe(
         (success: any) => {
           this.isLoading = false;
-          console.log(success);
           this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
@@ -293,7 +330,6 @@ export class ConsultaCorteComponent implements OnInit {
       this.isLoading = true;
       this.consultaCorteService.getCortesOficinas(filtro).subscribe(
         (success: any) => {
-          console.log(success);
           this.isLoading = false;
           this.dataSource = new MatTableDataSource<cortesPlaneacion>(success as cortesPlaneacion[]);
           this.dataSource.paginator = this.paginator;
@@ -313,7 +349,7 @@ export class ConsultaCorteComponent implements OnInit {
     }
   }
   /**
-    * cargarDatos: Funcion para el evento del filtro de la tabla tipo venta
+    * onFechaInicioChange,onFechaFinChange: Funcion para el evento del filtro de la tabla tipo venta
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -327,7 +363,7 @@ export class ConsultaCorteComponent implements OnInit {
   }
 
   /**
-    * cargarDatos: Funcion para el filtrado de la tabla
+    * applyFilter: Funcion para el filtrado de la tabla
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -356,7 +392,7 @@ export class ConsultaCorteComponent implements OnInit {
     this.dataSource.filter = JSON.stringify(filters);
   }
   /**
-    * cargarDatos: Funcion para el evento del filtro de la tabla tipo venta
+    * checkNombreTipoVenta: Funcion para el evento del filtro de la tabla tipo venta
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -374,7 +410,7 @@ export class ConsultaCorteComponent implements OnInit {
     }
   }
   /**
-    * cargarDatos: Funcion para el evento del filtro de la tabla tipo de ubicacion
+    * checkNombreTipoUbicacion: Funcion para el evento del filtro de la tabla tipo de ubicacion
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -392,7 +428,7 @@ export class ConsultaCorteComponent implements OnInit {
     }
   }
   /**
-    * cargarDatos: Funcion para borrar los acentos del texto
+    * removeAccents: Funcion para borrar los acentos del texto
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
@@ -404,7 +440,7 @@ export class ConsultaCorteComponent implements OnInit {
 
 
 /**
-    * cargarDatos: Funcion para limpiar el formulario y los filtros de la tabla
+    * limpiarFormulario: Funcion para limpiar el formulario y los filtros de la tabla
     * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
