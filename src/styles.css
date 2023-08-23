@@ -919,7 +919,7 @@ span {
 
 #datosFlete .form-group {
   position: relative;
-  margin: 10% 0;
+  margin: 10% 2%;
 }
 
 #datosFlete .form-group label {
@@ -1080,13 +1080,13 @@ span {
 
 #circuitos{
   display: block;
-  padding: 5px;
+  padding: 3px;
   height: 135px;
 }
 
 
 .select2-container{
-  width: 78% !important;
+  width: 100% !important;
 }
 
 .select2-container--default .select2-results > .select2-results__options {

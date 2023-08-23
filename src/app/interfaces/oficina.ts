@@ -1,6 +1,6 @@
 export interface cedis {
-  id: number;
-  nombre: string;
+  idOficina: number;
+  nombreOficina: string;
 }
  export interface oficinas{
   oficina: number;

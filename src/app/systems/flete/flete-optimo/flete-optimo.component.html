@@ -16,43 +16,48 @@
     <table mat-table [dataSource]="dataSource" matSort class="table table-striped" matSort
       #tablaFleteOptimoSort="matSort">
       <ng-container matColumnDef="nombreOficina">
-        <th mat-header-cell *matHeaderCellDef> Sucursal
+        <th mat-header-cell *matHeaderCellDef> Origen
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="origenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombreOficina}} </td>
       </ng-container>
       <ng-container matColumnDef="nombreZona">
-        <th mat-header-cell *matHeaderCellDef> Ciudad
+        <th mat-header-cell *matHeaderCellDef> Zona de influencia(Destino)
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="zonaInfluenciaFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.nombreZona}}</td>
       </ng-container>
       <ng-container matColumnDef="cantidadFleteOptimo">
-        <th mat-header-cell *matHeaderCellDef> Zona
+        <th mat-header-cell *matHeaderCellDef> Flete
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" [formControl]="FleteFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
+            (input)="applyFilter()">
           </div>
         </th>
-        <td mat-cell *matCellDef="let row"> {{row.cantidadFleteOptimo}} </td>
+        <td mat-cell *matCellDef="let row"> {{row.cantidadFleteOptimo | currency:'USD':'symbol':'1.2-2'}} </td>
       </ng-container>
       <ng-container matColumnDef="estatus">
         <th mat-header-cell *matHeaderCellDef> Estatus
           <div>
-            <input type="text" class="form-control" aria-label="Filtro" aria-describedby="basic-addon1"
-              (keyup)="applyFilter($event)" #input>
+            <input type="text" class="form-control" aria-label="Filtro" [formControl]="estatusFiltro" aria-describedby="basic-addon1"
+            (input)="applyFilter()">
           </div>
         </th>
         <td mat-cell *matCellDef="let row"> {{row.estatus == 1 ? 'ACTIVADO' : 'INACTIVO' }} </td>
       </ng-container>
+      <ng-container matColumnDef="listaCircuitos">
+        <th mat-header-cell *matHeaderCellDef> Detalles circuitos</th>
+        <td mat-cell *matCellDef="let row"> <button id="Modificar" type="button" class="btn btn-primary"
+            (click)="verDetalles(row)" *ngIf="permisoDActualizar == 1" style="width: 85%;">Ver</button></td>
+      </ng-container>
       <ng-container matColumnDef="circuito">
-        <th mat-header-cell *matHeaderCellDef> Circuito</th>
+        <th mat-header-cell *matHeaderCellDef> Modificar</th>
         <td mat-cell *matCellDef="let row"> <button id="Modificar" type="button" class="btn btn-primary"
             (click)="abrirModalModificar(row.idFleteOptimo)" *ngIf="permisoDActualizar == 1"><mat-icon>edit</mat-icon></button></td>
       </ng-container>
@@ -65,9 +70,10 @@
     <div class="spinner-overlay" *ngIf="isLoading">
       <mat-spinner color="primary"></mat-spinner>
     </div>
-  </section>
-  <br>
+    <br>
   <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+  </section>
+
 
 
 
@@ -78,7 +84,7 @@
           [formGroup]="formGroupFlete">
           <h1>{{ modo === 'agregar' ? 'Agregar' : 'Modificar' }} Flete</h1>
           <div id="personal" class="datosFlete">
-            <h3>Sucursal</h3>
+            <h3>Origen</h3>
             <div id="buscarDatosflete">
               <mat-form-field>
                 <input matInput type="text" class="form-control sucursal" id="idSucursal" [value]="defaultSatelite"
@@ -86,14 +92,14 @@
                   placeholder="Buscar por nombre" (input)="onInputSucursales($event)">
                 <mat-autocomplete #autoSucursal [displayWith]="displayFn">
                   <mat-option *ngFor="let sucursal of filteredSucursales" [value]="sucursal">
-                    {{ sucursal.nombre }}
+                    {{ sucursal.nombreOficina }}
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
             </div>
           </div>
           <div id="usuario" class="datosFlete">
-            <h3>Zona</h3>
+            <h3>Zona de influencia(Destino)</h3>
             <mat-form-field>
               <input matInput type="text" class="form-control sucursal" id="zona" formControlName="zona"
                 [placeholder]="placeholderSucursal" [matAutocomplete]="zona" (input)="onInputZonas($event)">
@@ -106,12 +112,13 @@
           </div>
           <div id="respuesta" class="datosFlete">
             <h3>Flete optimo</h3>
-            <input type="text" id="flete" formControlName="flete" class="form-control" (input)="onInput($event)" (keypress)="onKeyPress($event)">
+            <input style="margin-left: 0%;" type="text" id="flete" formControlName="flete" class="form-control" (input)="onInput($event)" (keypress)="onKeyPress($event)">
           </div>
           <div id="circuitos" *ngIf="ngSelect">
             <h3>Circuitos</h3>
             <ng-select2 [data]="exampleData" [options]="options" [width]="'500'" id="circuitos" formControlName="circuitos" [(ngModel)]="value">
-            </ng-select2></div>
+            </ng-select2>
+          </div>
             <div class="form-group" style="width: 100%;">
               <h3>Estatus</h3>
               <div class="switch-group" style="font-size: 0.8em;pointer-events: none;" [style.pointerEvents]="isDivBlocked ? 'none' : 'auto'">
@@ -135,3 +142,42 @@
   </ng-template>
 
 </div>
+
+
+<ng-template #dialogCircuitos>
+  <div id="datosFlete">
+    <div class="form-group">
+      <mat-icon> location_on</mat-icon>{{fleteDetalles.nombreOficina}}-{{fleteDetalles.nombreZona}}
+    </div>
+    <div class="form-group">
+      <mat-icon> attach_money</mat-icon>{{fleteDetalles.cantidadFleteOptimo}}
+    </div>
+    <div class="form-group">
+      <table class="table table-striped">
+        <thead>
+          <tr class="table-primary">
+            <th>Clave</th>
+            <th>Nombre</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let circuito of listCircuitos">
+            <td>{{ circuito.idCircuito }}</td>
+            <td>{{ circuito.nombreCircuito }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="form-group" *ngIf="listCircuitos.length === 0">
+        <h3>Este flete óptimo no cuenta con circuitos asignados</h3>
+      </div>
+    </div>
+  </div>
+  <div id="botonesFleteBox">
+    <button type="button" class="btn btn-secondary" (click)="oncloseDialog()">Cerrar</button>
+  </div>
+  <br>
+</ng-template>
+
+
+
+

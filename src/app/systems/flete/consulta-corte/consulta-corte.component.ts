@@ -181,6 +181,7 @@ export class ConsultaCorteComponent {
           this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
         },
         (error: any) => {
+          console.log(error);
           this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
         });
     }

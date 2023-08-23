@@ -64,7 +64,7 @@
             (input)="onInputSucursales($event)">
           <mat-autocomplete #origen [displayWith]="displayFn">
             <mat-option *ngFor="let cedis of filteredSucursales" [value]="cedis">
-              {{ cedis.nombre }}
+              {{ cedis.nombreOficina }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

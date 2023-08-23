@@ -33,7 +33,8 @@ export class consultaCorteService {
     return this.http.post<cortes[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getAll/`,filtro);
   }
   getCortesOficinas(filtro:any){
-    return this.http.post<cortes[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getByIdOficina`,filtro);
+    console.log(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getByIdOficina`,filtro)
+    return this.http.post<cortes[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/corte/getByIdOficina/`,filtro);
   }
 
   getFindbyCorte(corte:string){

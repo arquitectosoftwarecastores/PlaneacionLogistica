@@ -372,8 +372,8 @@ export class PrincipalPlaneacionComponent {
   }
 
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.id;
-    return sucursal ? sucursal.nombre : '';
+    this.selectedSatelite = sucursal.idOficina;
+    return sucursal ? sucursal.nombreOficina : '';
   }
   displayFnZonas(zona: any): string {
     if (zona) {
@@ -388,7 +388,7 @@ export class PrincipalPlaneacionComponent {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.cedis.filter((sucursal) =>
-        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.cedis;
@@ -452,9 +452,9 @@ export class PrincipalPlaneacionComponent {
     if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite')) {
       satelite = 1;
     }
-    console.log(cedisOrigen.id);
-    let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.id : this.obtenerIdOficina();
-    if (this.obtenerIdOficina().includes('1100') && cedisOrigen.id == null) {
+
+    let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
+    if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
     } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha de inicio', '⛔', 3000);
@@ -647,7 +647,7 @@ export class PrincipalPlaneacionComponent {
       idTipoVentaValues.sort((a: number, b: number) => a - b);
       const idTipoVentaString = idTipoVentaValues.join(',');
 
-      let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.id : this.obtenerIdOficina();
+      let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
 
       this.oncloseDialog();
 

@@ -275,10 +275,13 @@ export class SateliteComponent implements OnInit {
     const formattedDate = `${year}-${month}-${day}`;
     const sateliteSeleccionado = this.formGroupSatelite.value.idSatelite;
     const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
+    console.log(sateliteSeleccionado)
+    console.log(sucursalSeleccionado)
+
     if (this.modo === 'agregar') {
       this.agregar = {
-        idOficinaSatelite: sateliteSeleccionado.id,
-        idOficinaPertenece: sucursalSeleccionado.id,
+        idOficinaSatelite: sateliteSeleccionado.idOficina,
+        idOficinaPertenece: sucursalSeleccionado.idOficina,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -298,7 +301,7 @@ export class SateliteComponent implements OnInit {
       this.modificar = {
         idSucursalSatelite: this.idOficinaSatelite,
         idOficinaSatelite: this.inputValue,
-        idOficinaPertenece: sucursalSeleccionado.id === undefined ? this.defaultSatelite : sucursalSeleccionado.id,
+        idOficinaPertenece: sucursalSeleccionado.idOficina === undefined ? this.defaultSatelite : sucursalSeleccionado.idOficina,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -369,6 +372,7 @@ export class SateliteComponent implements OnInit {
     this.isDisabled=false;
     this.isDivBlocked=false
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
+      console.log(response);
     this.inputValue = response.idOficinaSatelite;
     this.placeholderText = response.nombreSatelite;
     this.defaultSatelite = response.idOficinaPertenece;
@@ -383,11 +387,12 @@ export class SateliteComponent implements OnInit {
   }
 
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.id;
-    return sucursal ? sucursal.nombre : '';
+    console.log(sucursal);
+    this.selectedSatelite = sucursal.idOficina;
+    return sucursal ? sucursal.nombreOficina : '';
   }
   displayFnSatelite(satelite: any): string {
-    return satelite ? satelite.nombre.trim() : '';
+    return satelite ? satelite.nombreOficina.trim() : '';
   }
 
   /**
@@ -404,7 +409,7 @@ export class SateliteComponent implements OnInit {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.sucursales.filter((sucursal) =>
-        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.sucursales;
@@ -425,7 +430,7 @@ export class SateliteComponent implements OnInit {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.satelites.filter((satelite) =>
-        satelite.nombre.toLowerCase().includes(lowercaseQuery)
+        satelite.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.satelites;

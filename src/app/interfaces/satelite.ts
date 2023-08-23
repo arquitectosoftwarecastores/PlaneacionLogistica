@@ -1,4 +1,4 @@
 export interface satelite {
-  id: number;
-  nombre: string;
+  idOficina: number;
+  nombreOficina: string;
 }

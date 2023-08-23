@@ -1,13 +1,8 @@
-import { AfterViewInit, Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatDialog } from '@angular/material/dialog';
-import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -21,45 +16,22 @@ import { zonasInfluencia } from 'src/app/interfaces/zonasInfluencia';
 import { forkJoin } from 'rxjs';
 import { oficinasService } from '../../../services/oficinas.service';
 import { sateliteService } from 'src/app/services/satelite.service';
-import { circuito } from 'src/app/interfaces/circuitos';
-
-
-interface City {
-  name: string,
-  code: string
-}
-/** Constants used to fill up our data base. */
-const FLETE: string[] = [
-  'blueberry',
-
-];
-
-const CDP: string[] = [
-  'blueberry',
-];
-const BULTOS: string[] = [
-  'Maia',
-];
-const CONTIENE: string[] = [
-  'Maia',
-];
-
-const VOLUMEN: string[] = [
-  'Maia',
-];
-const ORIGEN: string[] = [
-  'Maia',
-];
+import { ruta } from 'src/app/interfaces/ruta';
+import { CircuitoFleteOptimo } from 'src/app/interfaces/circuitos';
+import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 
 
 
 @Component({
   selector: 'app-flete-optimo',
   templateUrl: './flete-optimo.component.html',
-  styleUrls: ['./flete-optimo.component.css']
+  styleUrls: ['./flete-optimo.component.css'],
+  providers: [
+    { provide: MatPaginatorIntl, useValue: CustomPaginator() }
+  ]
 })
 
-export class FleteOptimoComponent implements AfterViewInit {
+export class FleteOptimoComponent implements OnInit {
   public permisoAInsertarAgregar: any = 0;
   public permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -77,34 +49,46 @@ export class FleteOptimoComponent implements AfterViewInit {
   public formGroupFlete: any;
   zonasInfluencia: zonasInfluencia[] = [];
   filteredZonas: any[] = [];
-  ruta: circuito[] = [];
+  ruta: ruta[] = [];
+  listCircuitos: CircuitoFleteOptimo[] = [];
+  fleteDetalles!: flete_optimo;
   selectedZonasInfluencia: any;
   isDisabled: boolean = false;
   isDivBlocked: boolean = true;
   estatus: number = 0;
-  displayedColumns: string[] = ['nombreOficina', 'nombreZona', 'cantidadFleteOptimo', 'estatus','circuito'];
+  displayedColumns: string[] = ['nombreOficina', 'nombreZona', 'cantidadFleteOptimo', 'estatus', 'listaCircuitos', 'circuito'];
   dataSource!: MatTableDataSource<flete_optimo>;
   modo: string = 'agregar';
-  ngSelect:boolean=false;
-
+  ngSelect: boolean = false;
+  circuitosActuales: CircuitoFleteOptimo[] = [];
+  idFleteOptimo!: number;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
-  @ViewChild('modificarglete') modificarglete!: TemplateRef<any>;
+  @ViewChild('dialogCircuitos') dialogCircuitos!: TemplateRef<any>;
   @ViewChild('tablaFleteOptimoSort', { static: false }) set tablaFleteOptimoSort(tablaFleteOptimoSort: MatSort) {
     if (this.validaInformacion(tablaFleteOptimoSort)) this.dataSource.sort = tablaFleteOptimoSort;
   }
   public exampleData!: Array<Select2OptionData>;
   public options!: Options;
   public _value!: string[];
+  public selectedOrder: string[] = [];
+
+  origenFiltro = new FormControl();
+  zonaInfluenciaFiltro = new FormControl();
+  FleteFiltro = new FormControl();
+  personalFiltro = new FormControl();
+  estatusFiltro = new FormControl();
 
   constructor(public snackBar: MatSnackBar, public dialog: MatDialog, private router: Router, private authService: AuthService,
-              private fletesService:fletesService,private formBuilder: FormBuilder, public oficinaService:oficinasService, public sateliteService: sateliteService) {
+    private fletesService: fletesService, private formBuilder: FormBuilder, public oficinaService: oficinasService, public sateliteService: sateliteService) { }
 
 
+  ngOnInit(): void {
+    // Numero de sistema y modulo del componente
     const SISTEMA: number = 14;
     const MODULO: number = 80;
-
+    // mostrar todas las columnas del mat-table
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
@@ -119,8 +103,9 @@ export class FleteOptimoComponent implements AfterViewInit {
         if (this.permisoBConsultar == 0) {
           this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
           this.router.navigate(['/home/inicio']);
-        }else{
-          this.cargarDatos();
+        } else {
+          let mensaje = 'Flete optimo.'
+          this.cargarDatos(mensaje);
         }
       } else {
         this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
@@ -135,7 +120,7 @@ export class FleteOptimoComponent implements AfterViewInit {
       zona: new FormControl(),
       estatus: new FormControl(),
       flete: new FormControl(),
-      circuitos:new FormControl()
+      circuitos: new FormControl()
     });
     this.formGroupFlete = this.formBuilder.group({
       idSucursal: [null, Validators.compose([Validators.required])],
@@ -146,7 +131,7 @@ export class FleteOptimoComponent implements AfterViewInit {
       zona: '',
       estatus: '',
       flete: '',
-      circuitos:[]
+      circuitos: []
     });
 
     this._value = [];
@@ -156,20 +141,31 @@ export class FleteOptimoComponent implements AfterViewInit {
       multiple: true,
       tags: true
     };
-    this.cargarSatelitesSucursales();
+    this.cargarFletesOptimos();
   }
-  cargarSatelitesSucursales() {
+
+  /**
+    * cargarFletesOptimos: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
+  cargarFletesOptimos() {
     forkJoin([
       this.oficinaService.getOficinas(),
       this.oficinaService.getZonasInfluencia(),
       this.fletesService.getCircuitos()
     ]).subscribe(
       ([oficinas, zona, circuitos]) => {
-        console.log(zona);
+
         this.sucursales = oficinas;
+        console.log(this.sucursales);
         this.zonasInfluencia = zona;
-        console.log(circuitos);
-        this.ruta=circuitos;
+
+        this.ruta = circuitos;
         this.actualizarExampleData();
       },
       (error) => {
@@ -177,6 +173,15 @@ export class FleteOptimoComponent implements AfterViewInit {
       }
     );
   }
+  /**
+    * actualizarExampleData: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-17
+   */
+
   actualizarExampleData() {
     this.exampleData = this.ruta.map(item => ({
       id: item.idRuta.toString(),
@@ -184,55 +189,92 @@ export class FleteOptimoComponent implements AfterViewInit {
     }));
   }
 
+  /**
+    * limpiarFormulario: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-17
+   */
+
   get value(): string[] {
     return this._value;
   }
   set value(value: string[]) {
     this._value = value;
   }
+
+  /**
+    * obtenerIdOficina: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
   obtenerIdOficina(): string {
     let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
     return idoficinaJson.claveOficina;
   }
+
+  /**
+    * openSnackBar: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
   }
 
+  /**
+    * openDialog: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
   openDialog(): void {
-    this.dialog.open(this.dialogTemplate);
+    const dialogConfig = new MatDialogConfig();
+    if (this.modo == 'agregar') {
+      dialogConfig.width = '460px';
+      this.dialog.open(this.dialogTemplate, dialogConfig);
+    } else {
+      dialogConfig.width = '550px';
+      this.dialog.open(this.dialogTemplate, dialogConfig);
+    }
   }
+  /**
+    * oncloseDialog: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
   oncloseDialog(): void {
     this.dialog.closeAll();
 
   }
 
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-  drop(event: CdkDragDrop<string[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
-    }
-  }
+  /**
+    * validaInformacion: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-16
+   */
 
   validaInformacion(dato: any): boolean {
     if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
@@ -243,59 +285,120 @@ export class FleteOptimoComponent implements AfterViewInit {
     }
   }
 
-  cargarDatos() {
+  /**
+    * cargarDatos: Funcion para obtener los datos de la tabla.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
+  cargarDatos(mensaje: string) {
     this.isLoading = true;
     if (this.obtenerIdOficina() == '1100') {
       this.fletesService.getFletesOptimo().subscribe(
         (success: any) => {
-          console.log(success);
+
           this.isLoading = false;
           this.dataSource = new MatTableDataSource<flete_optimo>(success as flete_optimo[]);
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaFleteOptimoSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          this.openSnackBar('' + mensaje, '✅', 3000);
         },
         (error: any) => {
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+          this.isLoading = false;
+          this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     } else {
       this.fletesService.getFletesOptimoOficina(this.obtenerIdOficina()).subscribe(
         (success: any) => {
-          console.log(success);
+
           this.isLoading = false;
           this.dataSource = new MatTableDataSource<flete_optimo>(success as flete_optimo[]);
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaFleteOptimoSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          this.openSnackBar('' + mensaje, '✅', 3000);
         },
         (error: any) => {
-          this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+          this.isLoading = false;
+          this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
         });
     }
   }
+
+  /**
+    * onInputSucursales: Funcion para el evento del filtrado en el mat-input zonas.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-18
+   */
+
+
   onInputSucursales(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     const query = inputElement.value;
     this.filteredSucursales = this.filtrarDatosSucursal(query);
   }
+
+  /**
+    * filtrarDatosSucursal: Funcion de filtrado para mostrar la informacion en el mat-input de los cedis
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-18
+   */
+
+
   filtrarDatosSucursal(query: string): any[] {
     let filtered: any[] = [];
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.sucursales.filter((sucursal) =>
-        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
+      console.log(filtered);
     } else {
       filtered = this.sucursales;
     }
     return filtered;
   }
+
+  /**
+    * displayFn: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
+
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.id;
-    return sucursal ? sucursal.nombre : '';
+    if (sucursal) {
+      this.selectedSatelite = sucursal.idOficina;
+      return sucursal.nombreOficina;
+    } else {
+      return '';
+    }
+
   }
+
+  /**
+    * displayFnZonas: Funcion de filtrado para mostrar la informacion en el mat-input zonas de influencia
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
+
   displayFnZonas(zona: any): string {
     if (zona) {
       this.selectedZonasInfluencia = zona.idZona;
@@ -304,11 +407,32 @@ export class FleteOptimoComponent implements AfterViewInit {
       return '';
     }
   }
+
+  /**
+    * onInputZonas: Funcion para el evento del filtrado en el mat-input zonas
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-18
+   */
+
+
   onInputZonas(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     const query = inputElement.value;
     this.filteredZonas = this.filtrarDatosZonasInfluencia(query);
   }
+
+  /**
+    * filtrarDatosZonasInfluencia: Funcion para obtener el filtrado del mat-input zonas de influencia
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-18
+   */
+
 
   filtrarDatosZonasInfluencia(query: string): any[] {
     let filteredZona: any[] = [];
@@ -322,11 +446,32 @@ export class FleteOptimoComponent implements AfterViewInit {
     }
     return filteredZona;
   }
+
+  /**
+    * toggleCheckbox: Funcion obtener el valor de 1 o 0 del estatus
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-15
+   */
+
   toggleCheckbox() {
-    this.estatus = this.estatus === 0 ? 1 : 0;
+    this.estatus = this.estatus === 0 ? 0 : 1;
   }
+
+  /**
+    * onKeyPress: Permitir solo teclas numéricas y ciertas teclas especiales (por ejemplo, backspace)
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-18
+   */
+
+
   onKeyPress(event: KeyboardEvent) {
-    // Permitir solo teclas numéricas y ciertas teclas especiales (por ejemplo, backspace)
+
     const allowedKeys = [8, 37, 39, 46];
     if (
       allowedKeys.indexOf(event.keyCode) === -1 &&
@@ -336,6 +481,16 @@ export class FleteOptimoComponent implements AfterViewInit {
       event.preventDefault();
     }
   }
+
+  /**
+    * onInput: Funcion de solo aceptar caracteres numericos.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-17
+   */
+
 
   onInput(event: any) {
     // Remover caracteres no numéricos usando una expresión regular
@@ -351,100 +506,335 @@ export class FleteOptimoComponent implements AfterViewInit {
     }
   }
 
+  /**
+    * guardarFlete: Funcion para guardar el nuevo flete optimo
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-17
+   */
+
+
   guardarFlete() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = ("0" + (today.getMonth() + 1)).slice(-2);
-    const day = ("0" + today.getDate()).slice(-2);
-    const horas = today.getHours();
-    const minutos = today.getMinutes();
-    const segundos = today.getSeconds();
-    const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-    const formattedDate = `${year}-${month}-${day}`;
-    const zonaSeleccionado = this.formGroupFlete.value.zona;
-    const sucursalSeleccionado = this.formGroupFlete.value.idSucursal;
-    const cantidadFlete=this.formGroupFlete.value.flete;
 
+    if (typeof this.formGroupFlete.value.idSucursal !== 'object') {
+      this.openSnackBar('Tienes que seleccionar un origen.', '⛔', 3000);
+    } else if (typeof this.formGroupFlete.value.zona !== 'object') {
+      this.openSnackBar('Tienes que seleccionar una zona de influencia.', '⛔', 3000);
+    } else {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = ("0" + (today.getMonth() + 1)).slice(-2);
+      const day = ("0" + today.getDate()).slice(-2);
+      const horas = today.getHours();
+      const minutos = today.getMinutes();
+      const segundos = today.getSeconds();
+      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+      const formattedDate = `${year}-${month}-${day}`;
+      const zonaSeleccionado = this.formGroupFlete.value.zona;
+      const sucursalSeleccionado = this.formGroupFlete.value.idSucursal;
+      const cantidadFlete = this.formGroupFlete.value.flete !== '' ? this.formGroupFlete.value.flete : 'vacio';
+      const estatus = this.formGroupFlete.value.estatus === true ? 1 : 0;
+      let mensaje = 'Se guardo de manera exitosa!'
+      if (cantidadFlete == undefined || cantidadFlete == 0 || cantidadFlete == "vacio") {
+        this.openSnackBar('Se requiere ingresar un monto mayor a $0.00', '⛔', 3000);
+      } else {
+        this.isLoading = true;
+        if (this.modo === 'agregar') {
+          const agregar = {
+            idZona: zonaSeleccionado.idZona,
+            idOficina: sucursalSeleccionado.idOficina,
+            cantidadFleteOptimo: cantidadFlete,
+            estatus: this.estatus,
+            idPersonal: this.obtenerIdPersonal(),
+            fechaMod: formattedDate,
+            horaMod: formattedDate + 'T' + tiempo
+          };
 
+          this.fletesService.createFlete(agregar).subscribe(
+            (success: any) => {
+              this.cargarFletesOptimos();
+              this.cargarDatos(mensaje);
+              this.isLoading = false;
+            },
+            (error: any) => {
+              this.isLoading = false;
+              this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
+            });
+        } else if (this.modo === 'modificar') {
+          mensaje = 'Se actualizo de manera exitosa!'
+          this.isLoading = true;
+          console.log(estatus);
+          const modificar = {
+            idFleteOptimo: this.idFleteOptimo,
+            idOficina: sucursalSeleccionado.id,
+            idZona: zonaSeleccionado.id,
+            cantidadFleteOptimo: cantidadFlete,
+            estatus: estatus,
+            idPersonal: this.obtenerIdPersonal(),
+            fechaMod: formattedDate,
+            horaMod: formattedDate + 'T' + tiempo
+          };
+          this.fletesService.updateFlete(modificar).subscribe(
+            async (success: any) => {
+              if (this.circuitosActuales.length == 0) {
+                for (let i = 0; i < this._value.length; i++) {
+                  let circuito = {
+                    idFleteOptimo: this.idFleteOptimo,
+                    idCircuito: this._value[i],
+                    estatus: 1,
+                    idPersonal: this.obtenerIdPersonal(),
+                    fechaMod: formattedDate,
+                    horaMod: tiempo
+                  }
+                  await this.fletesService.createCircuito(circuito).toPromise();
+                }
+                this.isLoading = false;
+                this.cargarFletesOptimos();
+                this.cargarDatos(mensaje);
+              }
+              else if (this._value.length == this.circuitosActuales.length) {
+                for (let i = 0; i < this.circuitosActuales.length; i++) {
+                  let circuito = {
+                    idCircuitoFleteOptimo: this.circuitosActuales[i].idCircuitoFleteOptimo,
+                    idFleteOptimo: this.idFleteOptimo,
+                    idCircuito: this.circuitosActuales[i].idCircuito,
+                    estatus: 1,
+                    idPersonal: this.obtenerIdPersonal(),
+                    fechaMod: formattedDate,
+                    horaMod: tiempo
+                  }
+                  try {
+                    await this.fletesService.updateCircuito(circuito).toPromise();
+                  } catch (error) {
+                    this.isLoading = false;
+                    this.openSnackBar('Hubo un error al guardar los circuitos.', '⛔', 3000);
+                  }
+                }
+                this.cargarFletesOptimos();
+                this.cargarDatos(mensaje);
+                this.isLoading = false;
 
-    if (this.modo === 'agregar') {
-      const agregar= {
-        idZona: zonaSeleccionado.idZona,
-        idOficina: sucursalSeleccionado.id,
-        cantidadFleteOptimo:cantidadFlete,
-        estatus: this.estatus,
-        idPersonal: this.obtenerIdPersonal(),
-        fechaMod: formattedDate,
-        horaMod: formattedDate + 'T' + tiempo
-      };
+              } else if (this._value.length > this.circuitosActuales.length) {
+                try {
+                  for (let i = 0; i < this.circuitosActuales.length; i++) {
+                    let circuito = {
+                      idCircuitoFleteOptimo: this.circuitosActuales[i].idCircuitoFleteOptimo,
+                      idFleteOptimo: this.idFleteOptimo,
+                      idCircuito: this._value[i],
+                      estatus: 1,
+                      idPersonal: this.obtenerIdPersonal(),
+                      fechaMod: formattedDate,
+                      horaMod: tiempo
+                    }
 
-      this.fletesService.createFlete(agregar).subscribe(
-        (success: any) => {
-          this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
-          this.cargarSatelitesSucursales();
-          this.cargarDatos();
-        },
-        (error: any) => {
-          this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
-        });
+                    await this.fletesService.updateCircuito(circuito).toPromise();
+                  }
+                  for (let i = 0; i < this._value.length - this.circuitosActuales.length; i++) {
+                    let crearCircuito = {
+                      idFleteOptimo: this.idFleteOptimo,
+                      idCircuito: this._value[i + this.circuitosActuales.length],
+                      estatus: 1,
+                      idPersonal: this.obtenerIdPersonal(),
+                      fechaMod: formattedDate,
+                      horaMod: tiempo
+                    }
+                    await this.fletesService.createCircuito(crearCircuito).toPromise();
+                  }
+                  this.cargarFletesOptimos();
+                  this.cargarDatos(mensaje);
+                  this.isLoading = false;
+                } catch (error) {
+                  this.openSnackBar('Hubo un error al guardar los circuitos.', '⛔', 3000);
+                }
+              } else if (this._value.length < this.circuitosActuales.length) {
+                try {
+                  for (let i = 0; i < this.circuitosActuales.length; i++) {
+                    const estatus = (this.circuitosActuales.length - 1) === i ? 0 : 1;
+                    this.circuitosActuales[i].idCircuitoFleteOptimo;
+                    let circuito = {
+                      idCircuitoFleteOptimo: this.circuitosActuales[i].idCircuitoFleteOptimo,
+                      idFleteOptimo: this.idFleteOptimo,
+                      idCircuito: (this.circuitosActuales.length - 1) === i ? this.circuitosActuales[i].idCircuito : this._value[i],
+                      estatus: estatus,
+                      idPersonal: this.obtenerIdPersonal(),
+                      fechaMod: formattedDate,
+                      horaMod: tiempo
+                    }
+                    await this.fletesService.updateCircuito(circuito).toPromise();
+                  }
+                  this.cargarFletesOptimos();
+                  this.cargarDatos(mensaje);
+                  this.isLoading = false;
+                } catch (error) {
+                  console.log(error);
+                }
+              }
+            },
+            (error: any) => {
+              this.isLoading = false;
+              this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
+            });
+        }
+        this.oncloseDialog();
+      }
     }
 
-    else if (this.modo === 'modificar') {
-      const modificar = {
-        idFleteOptimo: 2,
-        idOficina: sucursalSeleccionado,
-        idZona: zonaSeleccionado,
-        cantidadFleteOptimo: cantidadFlete,
-        estatus: 1,
-        idPersonal: this.obtenerIdPersonal(),
-        fechaMod: formattedDate,
-        horaMod: formattedDate + 'T' + tiempo
-      };
-
-      this.fletesService.updateFlete(modificar).subscribe(
-        (success: any) => {
-          //aqui se guarda los circuitos
-          this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
-          this.cargarSatelitesSucursales();
-          this.cargarDatos();
-        },
-        (error: any) => {
-          this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
-        });
-
-    }
-    this.oncloseDialog();
   }
+  /**
+    * abrirModalAgregar: Funcion declarar y abrir el modal para agregar el flete optimo
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-16
+   */
+
 
   abrirModalAgregar() {
     this.modo = 'agregar';
-    this.formGroupFlete.get('idSucursal').setValue('');
-    this.formGroupFlete.get('zona').setValue('');
+    this.formGroupFlete.get('idSucursal').setValue();
+    this.formGroupFlete.get('zona').setValue();
+    this.formGroupFlete.get('flete').setValue();
     this.placeholderSucursal = '';
-    this.estatus=1;
-    this.isDivBlocked=true;
-    this.ngSelect=false;
+    this.estatus = 1;
+    this.isDivBlocked = true;
+    this.ngSelect = false;
     this.formGroupFlete.controls['estatus'].setValue(true);
     this.openDialog();
   }
 
-  abrirModalModificar(idSatelite: number) {
-    console.log(idSatelite);
-    this.modo = 'modificar';
-    this.fletesService.getByFletesOptimo(idSatelite).subscribe(response => {
-      this.formGroupFlete.controls['estatus'].setValue(response.estatus === 1 ? true : false);
-        this.openDialog();
-      }, (error: any) => {
-        this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
-      });
+  /**
+    * abrirModalModificar: Funcion declarar y abrir el modal para modificar el flete optimo
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-16
+   */
 
-    this.isDisabled=false;
-    this.isDivBlocked=false
-    this.ngSelect=true;
+
+  abrirModalModificar(idFlete: number) {
+    this.isLoading = true;
+    this.idFleteOptimo = idFlete;
+    this.modo = 'modificar';
+    this.fletesService.getByFletesOptimo(idFlete).subscribe(response => {
+      this.fletesService.getByCircuito(response.idFleteOptimo).subscribe(circuito => {
+        const rutas: string[] = [];
+        if (circuito.length > 0) {
+          this._value = [];
+          circuito.forEach(circuito => {
+            rutas.push(circuito.idCircuito.toString());
+          });
+          this.circuitosActuales = circuito;
+          this._value = rutas;
+          console.log(this.circuitosActuales);
+        } else {
+          this._value = [];
+        }
+        console.log(response.idOficina);
+        console.log(response.nombreOficina);
+        this.formGroupFlete.controls['estatus'].setValue(response.estatus === 1 ? true : false);
+        const oficina = { id: response.idOficina, nombreOficina: response.nombreOficina.trim() };
+        const zona = { id: response.idZona, nombre: response.nombreZona.trim() }
+        this.formGroupFlete.get('zona').setValue(zona);
+        this.formGroupFlete.get('idSucursal').setValue(oficina);
+        this.formGroupFlete.get('flete').setValue(response.cantidadFleteOptimo);
+        this.openDialog();
+        this.isLoading = false;
+      }, (error: any) => {
+        this._value = [];
+        this.circuitosActuales = [];
+        this.formGroupFlete.controls['estatus'].setValue(response.estatus === 1 ? true : false);
+        const oficina = { id: response.idOficina, nombreOficina: response.nombreOficina.trim() };
+        console.log(oficina)
+        const zona = { id: response.idZona, nombre: response.nombreZona.trim() }
+        console.log(zona)
+        this.formGroupFlete.get('zona').setValue(zona);
+        this.formGroupFlete.get('idSucursal').setValue(oficina);
+        this.formGroupFlete.get('flete').setValue(response.cantidadFleteOptimo);
+        this.isLoading = false;
+        this.openDialog();
+      })
+
+    }, (error: any) => {
+      this.isLoading = false;
+      this.openSnackBar('Hubo un error al consultar el flete optimo', '⛔', 3000);
+    });
+    this.isDisabled = false;
+    this.isDivBlocked = false
+    this.ngSelect = true;
   }
+
+  /**
+    * obtenerIdPersonal: Funcion para obtener el idPersonal del usuario.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-16
+   */
+
 
   obtenerIdPersonal(): string {
     let usuarioJson = JSON.parse(sessionStorage.getItem('usuario')!);
     return usuarioJson.id;
   }
+  /**
+    * applyFilter: Funcion para aplicar el filtro en la tabla de pleaneacion principal
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-08-16
+   */
+
+
+  applyFilter() {
+    const filters = {
+      nombreOficina: this.origenFiltro.value,
+      nombreZona: this.zonaInfluenciaFiltro.value,
+      cantidadFleteOptimo: this.FleteFiltro.value,
+      estatus: this.estatusFiltro.value,
+    };
+
+    this.dataSource.filterPredicate = (data: flete_optimo, filter: string) => {
+      const filtersObj = JSON.parse(filter);
+      const estatusFlete = data.estatus === 1 ? 'Activado' : 'Inactivo';
+      const nombreOficinaMatch = data.nombreOficina?.toLowerCase().includes(filtersObj.nombreOficina?.toLowerCase() || '');
+      const nombreZonaMatch = data.nombreZona?.toLowerCase().includes(filtersObj.nombreZona?.toLowerCase() || '');
+      const estatusFleteMatch = estatusFlete?.toString().toLowerCase().includes(filtersObj.estatus?.toLowerCase() || '');
+      const cantidadFleteOptimoMatch = data.cantidadFleteOptimo?.toString().toLowerCase().includes(filtersObj.cantidadFleteOptimo?.toLowerCase() || '');
+      return nombreOficinaMatch && nombreZonaMatch && estatusFleteMatch && cantidadFleteOptimoMatch;
+    };
+    this.dataSource.filter = JSON.stringify(filters);
+  }
+  /**
+     * applyFilter: Funcion para aplicar el filtro en la tabla de pleaneacion principal
+     *
+     * @param fecha (string)
+     * @return Date
+     * @author Oswaldo Ramirez [desarrolloti43]
+     * @date 2023-08-21
+    */
+  verDetalles(flete: any) {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width = '40%';
+    this.isLoading = true;
+    this.fleteDetalles = flete;
+    this.listCircuitos = [];
+    this.fletesService.getByCircuito(flete.idFleteOptimo).subscribe(circuito => {
+      this.isLoading = false;
+      this.listCircuitos = circuito;
+      this.dialog.open(this.dialogCircuitos, dialogConfig);
+    },
+      (error) => {
+        this.isLoading = false;
+        this.dialog.open(this.dialogCircuitos, dialogConfig);
+      }
+    );
+
+  }
+
 }
