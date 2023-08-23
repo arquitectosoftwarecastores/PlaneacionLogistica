@@ -10,6 +10,7 @@ import { sateliteService } from 'src/app/services/satelite.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 @NgModule({
   imports: [
     CommonModule,
@@ -21,6 +22,6 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
   ],
   declarations: [SateliteComponent],
   exports:[],
-  providers:[HttpClientModule,AuthService,sateliteService, oficinasService, sateliteService]
+  providers:[HttpClientModule,AuthService,sateliteService, oficinasService,{ provide: MatPaginatorIntl, useClass: SateliteComponent }]
 })
 export class SateliteSucursalModule { }
