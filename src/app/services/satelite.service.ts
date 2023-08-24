@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { satelite } from '../interfaces/satelite';
 import { sucursales_satelite } from '../interfaces/sucursales_satelite';
+import { cedis } from '../interfaces/oficina';
 
 
 
@@ -15,7 +16,7 @@ export class sateliteService {
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
 
   getSucursalSatelite(oficina: number):Observable<any>{
-    return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getById/${oficina}`);
+    return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getByIdOficinaSatelite/${oficina}`);
   }
 
   getAllSatelite():Observable<any>{
@@ -45,7 +46,7 @@ export class sateliteService {
     );
   }
   getSatelitesFaltantes(){
-    return this.http.get<satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasFaltantes`);
+    return this.http.get<cedis[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasFaltantes`);
   }
 
 

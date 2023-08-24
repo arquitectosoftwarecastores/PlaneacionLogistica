@@ -68,7 +68,7 @@ export class DetallesCorteComponent  implements OnInit{
           this.dataSource.paginator = this.paginator;
           this.paginator.pageSize = 5;
           this.dataSource.sort = this.tablaDetalleSort;
-          this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          this.openSnackBar('Destalles del corte.', '✅', 3000);
         },
         (error: any) => {
           this.isLoading = false;

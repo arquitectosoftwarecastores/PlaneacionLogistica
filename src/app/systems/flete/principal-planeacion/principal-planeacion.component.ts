@@ -200,6 +200,7 @@ export class PrincipalPlaneacionComponent {
         this.ventaList = venta;
         this.tipoList = ubicacionTalon;
         this.isLoading = false;
+        this.openSnackBar('Planeacion principal.', '✅', 3000);
       },
       (error) => {
         this.isLoading = false;
@@ -400,8 +401,8 @@ export class PrincipalPlaneacionComponent {
     * @date 2023-07-15
    */
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal?.id;
-    return sucursal ? sucursal.nombre : '';
+    this.selectedSatelite = sucursal?.idOficina;
+    return sucursal ? sucursal.nombreOficina : '';
   }
   /**
     * displayFnZonas: Funcion de filtrado para mostrar la informacion en el mat-input zonas de influencia
@@ -430,7 +431,7 @@ export class PrincipalPlaneacionComponent {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.cedis.filter((sucursal) =>
-        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.cedis;
@@ -503,7 +504,8 @@ export class PrincipalPlaneacionComponent {
     dia = String(fin.getDate()).padStart(2, '0');
 
     const fechaFinalFormato = `${año}-${mes}-${dia}`;
-    const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombre;
+    const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombreOficina;
+    console.log(idCedisInput);
     if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Local')) {
       local = 1;
     }
@@ -513,9 +515,9 @@ export class PrincipalPlaneacionComponent {
     if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite')) {
       satelite = 1;
     }
-    let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.id : this.obtenerIdOficina();
-
-    if (this.obtenerIdOficina().includes('1100') && cedisOrigen.id == null) {
+    let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
+    console.log(cedisOrigen.idOficina);
+    if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
     } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha de inicio', '⛔', 3000);
@@ -575,6 +577,7 @@ export class PrincipalPlaneacionComponent {
         }
         this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         this.isLoading = false;
+        console.log(this.dataSource.data)
       }),
       (error: any) => {
         this.mostrarBoton = false;
@@ -734,6 +737,7 @@ export class PrincipalPlaneacionComponent {
           });
       }
     }
+
   }
   /**
     * calcularSumatoria: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
@@ -799,7 +803,7 @@ export class PrincipalPlaneacionComponent {
       idTipoVentaValues.sort((a: number, b: number) => a - b);
       const idTipoVentaString = idTipoVentaValues.join(',');
 
-      let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.id : this.obtenerIdOficina();
+      let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
 
       this.oncloseDialog();
 

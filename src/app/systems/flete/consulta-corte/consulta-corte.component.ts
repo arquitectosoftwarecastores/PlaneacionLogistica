@@ -158,7 +158,7 @@ export class ConsultaCorteComponent implements OnInit {
             } else {
               mensajeConsulta = ' pero no se encontraron registros.';
             }
-            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+            this.openSnackBar('Consulta corte.' + mensajeConsulta, '✅', 3000);
           },
           (error: any) => {
             this.isLoading = false;
@@ -178,7 +178,7 @@ export class ConsultaCorteComponent implements OnInit {
             } else {
               mensajeConsulta = ' pero no se encontraron registros relacionados en la oficina actual.';
             }
-            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+            this.openSnackBar('Consulta corte.', '✅', 3000);
           },
           (error: any) => {
             this.isLoading = false;

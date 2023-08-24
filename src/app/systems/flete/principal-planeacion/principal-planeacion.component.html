@@ -64,7 +64,7 @@
             (input)="onInputSucursales($event)">
           <mat-autocomplete #origen [displayWith]="displayFn">
             <mat-option *ngFor="let cedis of filteredSucursales" [value]="cedis">
-              {{ cedis.nombre }}
+              {{ cedis.nombreOficina }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>
@@ -272,11 +272,10 @@
     <div class="spinner-overlay" *ngIf="isLoading">
       <mat-spinner color="primary"></mat-spinner>
     </div>
+    <br>
+    <mat-paginator #paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users">
+    </mat-paginator>
   </section>
-  <br>
-
-  <mat-paginator #paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users">
-  </mat-paginator>
 </div>
 
 

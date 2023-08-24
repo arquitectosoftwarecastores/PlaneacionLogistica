@@ -88,7 +88,7 @@
               [matAutocomplete]="autoSucursal" placeholder="Buscar por nombre" (input)="onInputSucursales($event)">
             <mat-autocomplete #autoSucursal [displayWith]="displayFn">
               <mat-option *ngFor="let sucursal of filteredSucursales" [value]="sucursal">
-                {{ sucursal.nombre }}
+                {{ sucursal.nombreOficina }}
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
@@ -104,7 +104,7 @@
             placeholder="Buscar por nombre" (input)="onInputSatelites($event)">
             <mat-autocomplete #autoSatelite [displayWith]="displayFnSatelite">
               <mat-option *ngFor="let satelite of filteredSatelites" [value]="satelite">
-                {{ satelite.nombre }}
+                {{ satelite.nombreOficina }}
               </mat-option>
             </mat-autocomplete>
           </mat-form-field>
