@@ -56,12 +56,7 @@ export class DetallesCorteComponent  implements OnInit{
           const tabla=success.descripcionTabla;
           const detalle = JSON.parse(tabla);
           this.corte = success.idCorte;
-
-          if(success.accion==null){
-            this.descripcion = '';
-          }else{
-            this.descripcion = success.accion;
-          }
+          this.descripcion = (success.accion === null) ? '' : success.accion;
           this.hora = success.horaMod;
           this.tipoCorte = success.nombreTipoVenta;
           this.dataSource = new MatTableDataSource<DatosTalon>(detalle as DatosTalon[]);
@@ -147,12 +142,7 @@ export class DetallesCorteComponent  implements OnInit{
    */
 
   validaInformacion(dato: any): boolean {
-    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return (dato !== undefined && dato !== null && dato !== '' && dato !== "Invalid Date") ? true : false;
   }
 /**
     * calcularSumatoria: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
