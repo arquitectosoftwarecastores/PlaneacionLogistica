@@ -15,6 +15,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-inicio',
@@ -45,14 +46,8 @@ export class InicioComponent implements OnInit{
   ngOnInit(): void {
     this.nombreCompletoUsuario = this.obtenerNombre();
       const today = new Date();
-      const year = today.getFullYear();
-      const month = ("0" + (today.getMonth() + 1)).slice(-2);
-      const day = ("0" + today.getDate()).slice(-2);
-      const horas = today.getHours();
-      const minutos = today.getMinutes();
-      const segundos = today.getSeconds();
-      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-      this.fechaActual = `${year}-${month}-${day}`;
+      const fechaIniciaFormato =  moment(today).format('YYYY-MM-DD');
+      this.fechaActual = fechaIniciaFormato;
       this.idOficinaActual = this.obtenerIdOficina() === '1100' ? '1100' : this.obtenerIdOficina();
   }
 

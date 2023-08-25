@@ -18,7 +18,7 @@ import { fletesService } from 'src/app/services/flete.service';
 import { ubicacionTalon } from 'src/app/interfaces/ubicacionTalon';
 import { DatosTalon } from 'src/app/interfaces/datosTalon';
 import { consultaCorteService } from 'src/app/services/consultaCorte';
-
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-principal-planeacion',
@@ -225,10 +225,8 @@ export class PrincipalPlaneacionComponent {
 
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if (virtual) {
-            if (tipoExiste == false) {
+          if (virtual && tipoExiste == false) {
               this.tipoList.push(virtual!);
-            }
           }
         },
         (error) => {
@@ -241,10 +239,8 @@ export class PrincipalPlaneacionComponent {
 
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if (virtual) {
-            if (tipoExiste == false) {
+          if (virtual && tipoExiste == false) {
               this.tipoList.push(virtual!);
-            }
           }
         },
         (error) => {
@@ -262,11 +258,7 @@ export class PrincipalPlaneacionComponent {
    */
 
   seleccionarTodosTipo() {
-    if (this.tiposSeleccionados) {
-      this.tipo.setValue([]);
-    } else {
-      this.tipo.setValue(this.tipoList);
-    }
+    this.tipo.setValue(this.tiposSeleccionados ? [] :this.tipoList);
     const isPisoSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Piso');
     const isPisoVirtual = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
     if (isPisoSelected == true || isPisoVirtual == true) {
@@ -339,8 +331,7 @@ export class PrincipalPlaneacionComponent {
 
   onInputSucursales(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredSucursales = this.filtrarDatosCedis(query);
+    this.filteredSucursales = this.filtrarDatosCedis(inputElement.value);
   }
   /**
     * onInputZonas: Funcion para el evento del filtrado en el mat-input cedis
@@ -352,8 +343,7 @@ export class PrincipalPlaneacionComponent {
 
   onInputZonas(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredZonas = this.filtrarDatosZonasInfluencia(query);
+    this.filteredZonas = this.filtrarDatosZonasInfluencia(inputElement.value);
   }
 
 /**
@@ -365,10 +355,7 @@ export class PrincipalPlaneacionComponent {
    */
 
   formatDate(date: any) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return moment(date).format('YYYY-MM-DD');
   }
 /**
     * openDialog: Funcion para abrir modal de guardar corte
@@ -427,16 +414,9 @@ export class PrincipalPlaneacionComponent {
     * @date 2023-07-15
    */
   filtrarDatosCedis(query: string): any[] {
-    let filtered: any[] = [];
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      filtered = this.cedis.filter((sucursal) =>
-        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
-      );
-    } else {
-      filtered = this.cedis;
-    }
-    return filtered;
+    return  query ?  this.cedis.filter((sucursal) =>
+        sucursal.nombreOficina.toLowerCase().includes(query.toLowerCase())
+      ) : this.cedis;
   }
   /**
     * filtrarDatosZonasInfluencia: Funcion para obtener el filtrado del mat-input zonas de influencia
@@ -446,16 +426,9 @@ export class PrincipalPlaneacionComponent {
     * @date 2023-07-15
    */
   filtrarDatosZonasInfluencia(query: string): any[] {
-    let filteredZona: any[] = [];
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      filteredZona = this.zonasInfluencia.filter((zona) =>
-        zona.nombre.toLowerCase().includes(lowercaseQuery)
-      );
-    } else {
-      filteredZona = this.zonasInfluencia;
-    }
-    return filteredZona;
+    return  query ?  this.zonasInfluencia.filter((zona) =>
+    zona.nombre.toLowerCase().includes(query.toLowerCase())
+      ) : this.zonasInfluencia;
   }
   /**
     * onFechaInicioChange, onFechaFinChange: Funcion para obtener el valor de los may-input tipo date
@@ -489,32 +462,16 @@ export class PrincipalPlaneacionComponent {
     let tablaList1 = new MatTableDataSource<DatosTalon>()
     let tablaList2 = new MatTableDataSource<DatosTalon>()
     let tablaList3 = new MatTableDataSource<DatosTalon>()
-    let local = 0;
-    let agencia = 0;
-    let satelite = 0;
     let inicio = new Date(fechaInicio);
-    let año = inicio.getFullYear();
-    let mes = String(inicio.getMonth() + 1).padStart(2, '0');
-    let dia = String(inicio.getDate()).padStart(2, '0');
     const columnasOcultas = ['tipoGuia', 'noEconomico'];
-    const fechaIniciaFormato = `${año}-${mes}-${dia}`;
+    const fechaIniciaFormato =  moment(inicio).format('YYYY-MM-DD');
     let fin = new Date(fechaFinal);
-    año = fin.getFullYear();
-    mes = String(fin.getMonth() + 1).padStart(2, '0');
-    dia = String(fin.getDate()).padStart(2, '0');
-
-    const fechaFinalFormato = `${año}-${mes}-${dia}`;
+    const fechaFinalFormato =  moment(fin).format('YYYY-MM-DD');
     const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombreOficina;
     console.log(idCedisInput);
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Local')) {
-      local = 1;
-    }
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Agencia')) {
-      agencia = 1;
-    }
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite')) {
-      satelite = 1;
-    }
+    let local = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Local'));
+    let agencia = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Agencia'));
+    let satelite = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite'));
     let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
     console.log(cedisOrigen.idOficina);
     if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
@@ -567,14 +524,7 @@ export class PrincipalPlaneacionComponent {
         this.dataSource.paginator = this.paginator;
         this.paginator.pageSize = 5;
         this.dataSource.sort = this.tablaPlaneacionSort;
-        let mensajeConsulta = '';
-        if (this.dataSource.data.length > 0) {
-          mensajeConsulta = '.';
-          this.mostrarBoton = true;
-        } else {
-          this.mostrarBoton = false;
-          mensajeConsulta = ' pero no se encontraron registros.';
-        }
+        let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
         this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         this.isLoading = false;
         console.log(this.dataSource.data)
@@ -611,15 +561,7 @@ export class PrincipalPlaneacionComponent {
                 this.dataSource.paginator = this.paginator;
                 this.paginator.pageSize = 5;
                 this.dataSource.sort = this.tablaPlaneacionSort;
-
-                let mensajeConsulta = '';
-                if (this.dataSource.data.length > 0) {
-                  mensajeConsulta = '.';
-                  this.mostrarBoton = true;
-                } else {
-                  this.mostrarBoton = false;
-                  mensajeConsulta = ' pero no se encontraron registros.';
-                }
+                let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
                 this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
                 this.isLoading = false;
               }),
@@ -643,14 +585,7 @@ export class PrincipalPlaneacionComponent {
                 this.paginator.pageSize = 5;
                 this.dataSource.sort = this.tablaPlaneacionSort;
                 if (local != 1) {
-                  let mensajeConsulta = '';
-                  if (this.dataSource.data.length > 0) {
-                    this.mostrarBoton = true;
-                    mensajeConsulta = '.';
-                  } else {
-                    this.mostrarBoton = false;
-                    mensajeConsulta = ' pero no se encontraron registros.';
-                  }
+                  let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
                   this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
                   this.isLoading = false;
                 }
@@ -681,14 +616,7 @@ export class PrincipalPlaneacionComponent {
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
               this.isLoading = false;
-              let mensajeConsulta = '';
-              if (this.dataSource.data.length > 0) {
-                this.mostrarBoton = true;
-                mensajeConsulta = '.';
-              } else {
-                this.mostrarBoton = false;
-                mensajeConsulta = ' pero no se encontraron registros.';
-              }
+              let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
               this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
             },
             (error: any) => {
@@ -720,14 +648,7 @@ export class PrincipalPlaneacionComponent {
             this.paginator.pageSize = 5;
             this.dataSource.sort = this.tablaPlaneacionSort;
             this.isLoading = false;
-            let mensajeConsulta = '';
-            if (this.dataSource.data.length > 0) {
-              this.mostrarBoton = true;
-              mensajeConsulta = '.';
-            } else {
-              this.mostrarBoton = false;
-              mensajeConsulta = ' pero no se encontraron registros.';
-            }
+            let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
             this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
           },
           (error: any) => {
@@ -766,12 +687,7 @@ export class PrincipalPlaneacionComponent {
    */
 
   validaInformacion(dato: any): boolean {
-    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
-      return true;
-    }
-    else {
-      return false;
-    }
+      return (dato != undefined && dato != null && dato != '' && dato != "Invalid Date");
   }
   /**
     * guardarCorte: Funcion para guardar el corte de la lista de todos los talones encontrados y filtrados
@@ -787,15 +703,9 @@ export class PrincipalPlaneacionComponent {
     }else if(this.formGroupCorte.get('descripcionCorte').value.length<=10){
       this.openSnackBar('La accion debe de tener mas de 10 caracteres.', '⛔', 3000);
     }else {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = ("0" + (today.getMonth() + 1)).slice(-2);
-      const day = ("0" + today.getDate()).slice(-2);
-      const horas = today.getHours();
-      const minutos = today.getMinutes();
-      const segundos = today.getSeconds();
-      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-      const formattedDate = `${year}-${month}-${day}`;
+      let hoy = new Date();
+      const formattedDate =  moment(hoy).format('YYYY-MM-DD');
+      const tiempo = moment(hoy).format('HH:mm:ss');;
       const cedisOrigen = this.formGroupFiltro.get('idCedis').value;
       const accion = this.formGroupCorte.get('descripcionCorte').value;
       const jsonData = JSON.stringify(this.dataSource.filteredData.slice());
@@ -874,11 +784,7 @@ export class PrincipalPlaneacionComponent {
     const isPisoSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Piso');
     const isPisoVirtual = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
     if (isPisoSelected == true || isPisoVirtual == true) {
-      if (isPisoSelected == true && isPisoVirtual == true) {
-        this.tiposSeleccionados = true;
-      } else {
-        this.tiposSeleccionados = false;
-      }
+      this.tiposSeleccionados = (isPisoSelected == true && isPisoVirtual == true) ;
       if (isPisoVirtual && isPisoSelected == false) {
         this.ventaList = this.ventaList.filter((item) => item.nombre !== 'Local');
       } else {
@@ -886,10 +792,8 @@ export class PrincipalPlaneacionComponent {
           (venta) => {
             const localVenta = venta.find(item => item.nombre === 'Local');
             const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
-            if (localVenta) {
-              if (ventaExiste == false) {
+            if (localVenta && ventaExiste == false) {
                 this.ventaList.push(localVenta);
-              }
             }
           },
           (error) => {
@@ -902,10 +806,8 @@ export class PrincipalPlaneacionComponent {
         (venta) => {
           const localVenta = venta.find(item => item.nombre === 'Local');
           const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
-          if (localVenta) {
-            if (ventaExiste == false) {
+          if (localVenta && ventaExiste == false) {
               this.ventaList.push(localVenta);
-            }
           }
         },
         (error) => {
@@ -929,11 +831,7 @@ export class PrincipalPlaneacionComponent {
     const isSateliteSelected = this.venta.value.some((venta: { nombre: string; }) => venta.nombre === 'Agencia');
     const isVirtualSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
 
-    if (isLocalSelected == true && isAgenciaVirtual == true && isSateliteSelected == true) {
-      this.ventasSeleccionados = true;
-    } else {
-      this.ventasSeleccionados = false;
-    }
+    this.ventasSeleccionados = (isLocalSelected == true && isAgenciaVirtual == true && isSateliteSelected == true);
     if (isLocalSelected == true || isAgenciaVirtual == true || isSateliteSelected == true) {
       if (isLocalSelected == true && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
@@ -952,10 +850,8 @@ export class PrincipalPlaneacionComponent {
         (tipo) => {
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if (virtual) {
-            if (tipoExiste == false) {
+          if (virtual && tipoExiste == false) {
               this.tipoList.push(virtual!);
-            }
           }
         },
         (error) => {
