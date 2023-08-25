@@ -57,11 +57,9 @@ export class ConsultaCorteComponent implements OnInit {
   @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
   @ViewChild('dialogRoles') dialogRoles!: TemplateRef<any>;
   @ViewChild('tablaCortesSort', { static: false }) set tablaCortesSort(sort: MatSort) {
-    if (this.validaInformacion(sort)) {
-      if (this.dataSource) {
+    if (this.validaInformacion(sort) && this.dataSource) {
         this.dataSource.sort = sort;
       }
-    }
   }
 
 
