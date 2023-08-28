@@ -22,7 +22,6 @@ export class oficinasService {
     return this.http.get<oficinas>(this.appsettings.API_ENDPOINT + `oficina/findOficinaByClave/`+clave);
   }
 
-
   getZonasInfluencia(){
     return this.http.get<zonasInfluencia[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getZonasInfluencia`);
   }

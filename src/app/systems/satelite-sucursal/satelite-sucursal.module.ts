@@ -22,6 +22,6 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
   ],
   declarations: [SateliteComponent],
   exports:[],
-  providers:[HttpClientModule,AuthService,sateliteService, oficinasService,{ provide: MatPaginatorIntl, useClass: SateliteComponent }]
+  providers:[HttpClientModule,AuthService,sateliteService, oficinasService, sateliteService]
 })
 export class SateliteSucursalModule { }
