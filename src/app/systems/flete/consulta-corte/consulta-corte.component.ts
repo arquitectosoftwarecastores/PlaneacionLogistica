@@ -160,7 +160,11 @@ export class ConsultaCorteComponent implements OnInit {
           },
           (error: any) => {
             this.isLoading = false;
-            this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+            if(error.status === 404){
+              this.openSnackBar('Se realizo la consulta de manera exitosa pero no se encuentran registros relacionados en la oficina actual.', '✅', 3000);
+            }else{
+              this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+            }
           });
       } else {
         //Buscar todos los cortes
