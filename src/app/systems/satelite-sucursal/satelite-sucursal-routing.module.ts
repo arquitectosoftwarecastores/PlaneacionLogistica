@@ -10,7 +10,7 @@ export const satilteRoutes: Routes = [
     path: 'sateliteSucursal', component: SateliteComponent, canActivate: [AuthGuard, RoleGuard],
     data: {
       sistema: 14,
-      modulo: 90
+      modulo: 82
     }
   },
   { path: '**', redirectTo: 'sateliteSucursal' }

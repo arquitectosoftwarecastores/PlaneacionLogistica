@@ -11,16 +11,12 @@ import {
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { fletesService } from '../../../services/flete.service';
+import { flete_optimo } from 'src/app/interfaces/flete';
 
 
-export interface UserData {
-  flete: string;
-  cdp: string;
-  bultos: string;
-  contiene: string;
-  volumen: string;
-  origen: string;
-}
+
+
 interface City {
   name: string,
   code: string
@@ -64,20 +60,24 @@ export class FleteOptimoComponent implements AfterViewInit {
   private permisoFRechazar: any = 0;
   private permisoHDescargar: any = 0;
   private permisoIImprimir: any = 0;
-  displayedColumns: string[] = ['flete', 'cdp', 'bultos', 'contiene', 'volumen', 'origen'];
-  dataSource: MatTableDataSource<UserData>;
+  isLoading: boolean = true;
+
+  displayedColumns: string[] = ['id_oficina', 'cdp', 'bultos', 'contiene', 'volumen', 'origen'];
+  dataSource!: MatTableDataSource<flete_optimo>;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
   @ViewChild('modificarglete') modificarglete!: TemplateRef<any>;
+  @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
+    if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
+  }
   cities!: City[];
 
   selectedCities!: City[];
-  constructor(public snackBar: MatSnackBar, public dialog: MatDialog, private router: Router, private authService: AuthService) {
+  constructor(public snackBar: MatSnackBar, public dialog: MatDialog, private router: Router, private authService: AuthService,
+              private fletesService:fletesService) {
 
-    const users = Array.from({ length: 100 }, (_, k) => createNewUser(k + 1));
-    this.dataSource = new MatTableDataSource(users);
     this.cities = [
       {name: 'LEON', code: '1'},
       {name: 'TORREON', code: '2'},
@@ -86,7 +86,7 @@ export class FleteOptimoComponent implements AfterViewInit {
       {name: 'MORELIA', code: '5'}
   ];
     const SISTEMA: number = 14;
-    const MODULO: number = 88;
+    const MODULO: number = 80;
 
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {
@@ -102,6 +102,8 @@ export class FleteOptimoComponent implements AfterViewInit {
         if (this.permisoBConsultar == 0) {
           this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
           this.router.navigate(['/home/inicio']);
+        }else{
+          this.cargarDatos();
         }
       } else {
         this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
@@ -114,16 +116,18 @@ export class FleteOptimoComponent implements AfterViewInit {
 
   }
 
+
+
   openSnackBar(message: string, action: string, tiempo: number): void {
     this.snackBar.open(message, action, {
       duration: tiempo
     });
   }
   openDialog(): void {
-    const dialogRef = this.dialog.open(this.dialogTemplate);
+    this.dialog.open(this.dialogTemplate);
   }
   openDialogModificar(): void {
-    const dialogRol = this.dialog.open(this.modificarglete);
+    this.dialog.open(this.modificarglete);
   }
   oncloseDialog(): void {
     this.dialog.closeAll();
@@ -143,9 +147,6 @@ export class FleteOptimoComponent implements AfterViewInit {
       this.dataSource.paginator.firstPage();
     }
   }
-
-  items = ['', '', '', '', ''];
-
   drop(event: CdkDragDrop<string[]>) {
     if (event.previousContainer === event.container) {
       moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
@@ -158,45 +159,23 @@ export class FleteOptimoComponent implements AfterViewInit {
       );
     }
   }
-}
 
-/** Builds and returns a new User. */
-function createNewUser(id: number): UserData {
-  const flete =
-    FLETE[Math.round(Math.random() * (FLETE.length - 1))] +
-    ' ' +
-    FLETE[Math.round(Math.random() * (FLETE.length - 1))].charAt(0) +
-    '';
+  validaInformacion(dato: any): boolean {
+    return dato !== undefined && dato !== null && dato !== '' && dato !== "Invalid Date";
+  }
 
-  const cdp = CDP[Math.round(Math.random() * (CDP.length - 1))] +
-    ' ' +
-    CDP[Math.round(Math.random() * (CDP.length - 1))].charAt(0) +
-    '';
-
-  const bultos = BULTOS[Math.round(Math.random() * (BULTOS.length - 1))] +
-    ' ' +
-    BULTOS[Math.round(Math.random() * (BULTOS.length - 1))].charAt(0) +
-    '';
-  const contiene = CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))] +
-    ' ' +
-    CONTIENE[Math.round(Math.random() * (CONTIENE.length - 1))].charAt(0) +
-    '';
-  const volumen = VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))] +
-    ' ' +
-    VOLUMEN[Math.round(Math.random() * (VOLUMEN.length - 1))].charAt(0) +
-    '';
-
-  const origen = ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))] +
-    ' ' +
-    ORIGEN[Math.round(Math.random() * (ORIGEN.length - 1))].charAt(0) +
-    '';
-
-  return {
-    flete: flete,
-    cdp: cdp,
-    bultos: bultos,
-    contiene: contiene,
-    volumen: volumen,
-    origen: origen
-  };
+  cargarDatos() {
+    this.isLoading = true;
+    this.fletesService.getFletesOptimo().subscribe((response: flete_optimo[]) => {
+      this.dataSource = new MatTableDataSource<flete_optimo>(response as flete_optimo[]);
+      this.dataSource.paginator = this.paginator;
+      this.paginator.pageSize = 5;
+      this.dataSource.sort = this.tablaSateliteSort;
+      this.isLoading = false;
+    },
+      (error: any) => {
+        this.openSnackBar('Hubo un error al cargar los datos', '⛔', 3000);
+        this.isLoading = false;
+      })
+  }
 }

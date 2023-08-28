@@ -7,13 +7,12 @@ import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { sateliteService } from 'src/app/services/satelite.service';
-import { sucursales_satelite } from '../../../interfaces/sucursales_satelite';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Oficina } from 'src/app/interfaces/oficina';
 import { forkJoin } from 'rxjs';
+import { sucursales_satelite } from 'src/app/interfaces/sucursales_satelite';
 import { satelite } from 'src/app/interfaces/satelite';
-import { Pipe, PipeTransform } from '@angular/core';
+import { cedis } from 'src/app/interfaces/oficina';
 import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
 export interface UserData {
   numero: string;
@@ -34,7 +33,7 @@ export interface UserData {
     { provide: MatPaginatorIntl, useValue: CustomPaginator() }
   ]
 })
-export class SateliteComponent implements OnInit   {
+export class SateliteComponent implements OnInit {
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -55,8 +54,8 @@ export class SateliteComponent implements OnInit   {
   modo: string = 'agregar';
   idOficinaSatelite!: number;
   displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idOficinaSatelite'];
-  sucursales: Oficina[] = [];
-  satelites: satelite[] = [];
+  sucursales: cedis[] = [];
+  satelites: cedis[] = [];
   selectedSucursal: any;
   selectedSatelite: any;
   filteredSucursales: any[] = [];
@@ -68,9 +67,8 @@ export class SateliteComponent implements OnInit   {
   placeholderText = '';
   placeholderSucursal = '';
   defaultSatelite = '';
+  isDisabled: boolean = false;
   isDivBlocked: boolean = true;
-  agregar: any;
-  modificar: any;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -78,10 +76,12 @@ export class SateliteComponent implements OnInit   {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
   @ViewChild('dialogAgregar') dialogAgregar!: TemplateRef<any>;
-  @ViewChild('tablaSateliteSort', { static: true }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
+  @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
 
+  agregar: any;
+  modificar: any;
   constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
     public snackBar: MatSnackBar, private router: Router, private authService: AuthService,private oficinaService: oficinasService)
     {}
@@ -104,17 +104,20 @@ export class SateliteComponent implements OnInit   {
       estatusSatelite: '',
       idoficinaSatelite: { value: '', disabled: true }
     });
+    this.cargarSatelitesSucursales();
+  }
+  cargarSatelitesSucursales(){
     forkJoin([this.oficinaService.getOficinas(), this.sateliteService.getSatelitesFaltantes()]).subscribe(
       ([oficinas, satelite]) => {
         this.sucursales = oficinas;
         this.satelites = satelite;
+        this.openSnackBar('Satelites Sucursal', '✅', 3000);
       },
       (error) => {
         this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
       }
     );
   }
-
   /**
     * obtenerPermisos: Funcion para obtener permisos y validar
     * @param fecha (string)
@@ -125,7 +128,7 @@ export class SateliteComponent implements OnInit   {
 
   obtenerPermisos(){
     const SISTEMA: number = 14;
-    const MODULO: number = 90;
+    const MODULO: number = 82;
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
 
     if (obtienePermisosG != undefined) {
@@ -274,8 +277,8 @@ export class SateliteComponent implements OnInit   {
     const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
     if (this.modo === 'agregar') {
       this.agregar = {
-        idOficinaSatelite: sateliteSeleccionado.id,
-        idOficinaPertenece: sucursalSeleccionado.id,
+        idOficinaSatelite: sateliteSeleccionado.idOficina,
+        idOficinaPertenece: sucursalSeleccionado.idOficina,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -285,6 +288,7 @@ export class SateliteComponent implements OnInit   {
       this.sateliteService.setSatelite(this.agregar).subscribe(
         (success: any) => {
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
+          this.cargarSatelitesSucursales();
           this.cargarDatos();
         },
         (error: any) => {
@@ -294,7 +298,7 @@ export class SateliteComponent implements OnInit   {
       this.modificar = {
         idSucursalSatelite: this.idOficinaSatelite,
         idOficinaSatelite: this.inputValue,
-        idOficinaPertenece: sucursalSeleccionado.id === undefined ? this.defaultSatelite : sucursalSeleccionado.id,
+        idOficinaPertenece: sucursalSeleccionado.idOficina === undefined ? this.defaultSatelite : sucursalSeleccionado.idOficina,
         estatus: this.estatus,
         idPersonal: this.obtenerIdPersonal(),
         fechaMod: formattedDate,
@@ -304,6 +308,7 @@ export class SateliteComponent implements OnInit   {
       this.sateliteService.updateSatelite(this.modificar).subscribe(
         (success: any) => {
           this.openSnackBar('Se modifico de manera exitosa!', '✅', 3000);
+          this.cargarSatelitesSucursales();
           this.cargarDatos();
         },
         (error: any) => {
@@ -342,8 +347,8 @@ export class SateliteComponent implements OnInit   {
     this.placeholderSucursal = '';
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
-    this.isDivBlocked=true;
     this.estatus=1;
+    this.isDivBlocked=true;
     this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
     this.openDialog();
   }
@@ -361,7 +366,9 @@ export class SateliteComponent implements OnInit   {
     this.idOficinaSatelite = idSatelite;
     this.inputOficinaSatelite = true;
     this.inputSatelites = false;
+    this.isDisabled=false;
     this.isDivBlocked=false
+    this.isLoading=true;
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
       this.inputValue = response.idOficinaSatelite;
       this.placeholderText = response.nombreSatelite;
@@ -369,6 +376,7 @@ export class SateliteComponent implements OnInit   {
       this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
       this.placeholderSucursal = response.nombrePertenece;
       this.estatus=response.estatus;
+      this.isLoading=false;
       this.openDialog();
     }, (error: any) => {
       this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
@@ -377,11 +385,11 @@ export class SateliteComponent implements OnInit   {
   }
 
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.id;
-    return sucursal ? sucursal.nombre : '';
+    this.selectedSatelite = sucursal.idOficina;
+    return sucursal ? sucursal.nombreOficina : '';
   }
   displayFnSatelite(satelite: any): string {
-    return satelite ? satelite.nombre.trim() : '';
+    return satelite ? satelite.nombreOficina.trim() : '';
   }
 
   /**
@@ -398,7 +406,7 @@ export class SateliteComponent implements OnInit   {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.sucursales.filter((sucursal) =>
-        sucursal.nombre.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.sucursales;
@@ -419,7 +427,7 @@ export class SateliteComponent implements OnInit   {
     if (query) {
       const lowercaseQuery = query.toLowerCase();
       filtered = this.satelites.filter((satelite) =>
-        satelite.nombre.toLowerCase().includes(lowercaseQuery)
+        satelite.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
     } else {
       filtered = this.satelites;
@@ -463,6 +471,7 @@ export class SateliteComponent implements OnInit   {
       this.paginator.pageSize = 5;
       this.dataSource.sort = this.tablaSateliteSort;
       this.isLoading = false;
+      this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
     },
       (error: any) => {
         this.openSnackBar('Hubo un error al cargar los datos', '⛔', 3000);

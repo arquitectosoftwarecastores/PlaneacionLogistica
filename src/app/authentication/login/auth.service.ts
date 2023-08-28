@@ -9,6 +9,7 @@ import { FormGroup } from '@angular/forms';
 import { AppsettingsComponent } from './../../app-settings/appsettings.component';
 import { catchError} from 'rxjs/operators';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -141,6 +142,10 @@ export class AuthService {
       respuesta['respuesta'] = false;
     }
 
+  }
+
+  getOficina(){
+    return this._usuario.claveOficina;
   }
   guardarToken(accesstoken: string): void {
     this._token = accesstoken;
