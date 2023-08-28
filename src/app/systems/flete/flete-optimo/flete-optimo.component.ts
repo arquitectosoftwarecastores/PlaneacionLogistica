@@ -161,7 +161,7 @@ export class FleteOptimoComponent implements AfterViewInit {
   }
 
   validaInformacion(dato: any): boolean {
-    return (dato !== undefined && dato !== null && dato !== '' && dato !== "Invalid Date") ? true : false;
+    return dato !== undefined && dato !== null && dato !== '' && dato !== "Invalid Date";
   }
 
   cargarDatos() {
