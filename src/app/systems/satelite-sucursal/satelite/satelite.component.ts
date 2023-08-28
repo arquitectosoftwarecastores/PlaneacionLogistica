@@ -70,6 +70,8 @@ export class SateliteComponent implements OnInit   {
   defaultSatelite = '';
   isDisabled: boolean = false;
   isDivBlocked: boolean = true;
+  agregar: any;
+  modificar: any;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
