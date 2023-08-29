@@ -29,6 +29,11 @@ import * as moment from 'moment';
   ]
 })
 export class PrincipalPlaneacionComponent {
+  minDate: Date = new Date();
+
+  // Calcula la fecha máxima (7 días desde hoy)
+  maxDate: Date = new Date();
+
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -488,9 +493,6 @@ export class PrincipalPlaneacionComponent {
       this.openSnackBar('Debes de seleccionar el tipo de la ubicacion del talon', '⛔', 3000);
     } else if (this.tipo.value.length == 2 && this.venta.value.length == 3) {
       this.isLoading = true;
-      let datosConsultaPisoAgenciaSatelite = {
-        "agencia": 1,
-        "satelite": 1,
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
@@ -774,15 +776,12 @@ export class PrincipalPlaneacionComponent {
   /**
     * bloquearOpcionPiso: Funcion para cambiar las opciones de los tipo venta
     *
-    * @param fecha (string)
     * @return Date
     * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-15
    */
 
   bloquearOpcionPiso() {
-    const isPisoSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Piso');
-    const isPisoVirtual = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
     if (isPisoSelected == true || isPisoVirtual == true) {
       this.tiposSeleccionados = (isPisoSelected == true && isPisoVirtual == true) ;
       if (isPisoVirtual && isPisoSelected == false) {
