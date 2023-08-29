@@ -14,10 +14,10 @@ import { fletesService } from 'src/app/services/flete.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { sateliteService } from 'src/app/services/satelite.service';
 import { consultaCorteService } from 'src/app/services/consultaCorte';
-import { DetallesCorteComponent } from './detalles-corte/detalles-corte.component';
+import { NgSelect2Module } from 'ng-select2';
 
 @NgModule({
-  declarations: [FleteOptimoComponent,PrincipalPlaneacionComponent,ConsultaCorteComponent, DetallesCorteComponent],
+  declarations: [FleteOptimoComponent,PrincipalPlaneacionComponent,ConsultaCorteComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(fletesRoutes),
@@ -26,6 +26,7 @@ import { DetallesCorteComponent } from './detalles-corte/detalles-corte.componen
     ReactiveFormsModule,
     AngularMaterialModule,
     MultiSelectModule,
+    NgSelect2Module
   ],
   providers:[HttpClientModule, fletesService,oficinasService, sateliteService,consultaCorteService]
 })

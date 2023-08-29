@@ -949,6 +949,7 @@ span {
 }
 
 #tituloConsultaCorte {
+  margin-left: 33%;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   color: #D4AF37;
@@ -1030,17 +1031,17 @@ span {
 }
 
 .spinner-overlay {
-
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background-color: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* Asegúrate de un valor alto de z-index */
+  width: 100%;
+  height: 100%;
 }
 
 .sucursal::placeholder {

@@ -69,7 +69,7 @@ export class LoginComponent {
         this.authService.guardarUsuario(response.access_token,response2);
         const usuario = this.authService.usuario;
           this.router.navigate(['/home']);
-          this.openSnackBar(`Bienvenido, ${usuario.nombreCompleto}!`, '✅');
+          this.openSnackBar(`Bienvenido, ${usuario.nombreCompleto}!`, '🖖👽');
       });
 
     },

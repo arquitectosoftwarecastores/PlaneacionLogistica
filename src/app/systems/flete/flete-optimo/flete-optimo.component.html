@@ -13,9 +13,10 @@
 
 <div class="felteOptimo">
   <section class="example-container mat-elevation-z8" tabindex="0">
-    <table mat-table [dataSource]="dataSource" matSort class="table table-striped">
-      <ng-container matColumnDef="id_oficina">
-        <th mat-header-cell *matHeaderCellDef> Sucursal
+    <table mat-table [dataSource]="dataSource" matSort class="table table-striped" matSort
+      #tablaFleteOptimoSort="matSort">
+      <ng-container matColumnDef="nombreOficina">
+        <th mat-header-cell *matHeaderCellDef> Origen
           <div>
             <input type="text" class="form-control" [formControl]="origenFiltro" aria-label="Filtro" aria-describedby="basic-addon1"
             (input)="applyFilter()">
@@ -69,8 +70,7 @@
     <div class="spinner-overlay" *ngIf="isLoading">
       <mat-spinner color="primary"></mat-spinner>
     </div>
-  </section>
-  <br>
+    <br>
   <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
   </section>
 
