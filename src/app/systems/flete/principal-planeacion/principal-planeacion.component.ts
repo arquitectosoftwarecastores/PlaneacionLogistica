@@ -1,22 +1,16 @@
 
-import { AfterViewInit, Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTable, MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import {
-  CdkDragDrop,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { MatPaginator, MatPaginatorIntl} from '@angular/material/paginator';
+import { MatSort} from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog} from '@angular/material/dialog';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/authentication/login/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { cedis } from 'src/app/interfaces/oficina';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
-import { sateliteService } from '../../../services/satelite.service';
 import { forkJoin } from 'rxjs';
 import { zonasInfluencia } from 'src/app/interfaces/zonasInfluencia';
 import { tipoVenta } from 'src/app/interfaces/tipoVenta';
@@ -24,7 +18,7 @@ import { fletesService } from 'src/app/services/flete.service';
 import { ubicacionTalon } from 'src/app/interfaces/ubicacionTalon';
 import { DatosTalon } from 'src/app/interfaces/datosTalon';
 import { consultaCorteService } from 'src/app/services/consultaCorte';
-
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-principal-planeacion',
@@ -55,7 +49,7 @@ export class PrincipalPlaneacionComponent {
   public sumatoriaTabla = new MatTableDataSource();
 
 
-  columnasMostradas: string[] = ['index', 'claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'origen', 'tipo', 'venta',
+  columnasMostradas: string[] = ['index', 'claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
     'destino', 'tipoGuia', 'noEconomico'];
   displayedColumns: string[] = this.columnasMostradas;
   venta = new FormControl();
@@ -72,6 +66,7 @@ export class PrincipalPlaneacionComponent {
   bultosFiltro = new FormControl();
   valumenFiltro = new FormControl();
   contieneFiltro = new FormControl();
+  DocumentaFiltro = new FormControl();
   origenFiltro = new FormControl();
   tipoFiltro = new FormControl();
   ventaFiltro = new FormControl();
@@ -95,7 +90,12 @@ export class PrincipalPlaneacionComponent {
   idCedisLocal!: number;
   mostrarColumna!: boolean;
   mostrarBoton = false;
-  isLoading=false;
+  isLoading: boolean = true;
+  selectedCedis: string | null = null;
+  selectedZona: string | null = null;
+  ventasSeleccionados = false;
+  tiposSeleccionados = false;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogCorte') dialogCorte!: TemplateRef<any>;
@@ -118,17 +118,20 @@ export class PrincipalPlaneacionComponent {
   ngOnInit(): void {
     this.tipo.setValue([]);
     this.venta.setValue([]);
+    // Numero de sistema y modulo del componente
     const SISTEMA: number = 14;
     const MODULO: number = 78;
+    // mostrar todas las columnas del mat-table
     this.mostrarColumna = true;
+
     this.formGroupFiltro = new FormGroup({
-      idCedis: new FormControl(),
-      idCedisLocal: new FormControl(),
-      zona: new FormControl(),
-      fechaInicio: new FormControl(),
-      fechafin: new FormControl(),
-      tipo: new FormControl(),
-      venta: new FormControl
+      idCedis: new FormControl(''),
+      idCedisLocal: new FormControl(''),
+      zona: new FormControl(''),
+      fechaInicio: new FormControl(null),
+      fechafin: new FormControl(null),
+      tipo: new FormControl(''),
+      venta: new FormControl('')
     });
 
     this.formGroupFiltro = this.formBuilder.group({
@@ -148,16 +151,13 @@ export class PrincipalPlaneacionComponent {
     this.formGroupCorte = this.formBuilder.group({
       descripcionCorte: ['', Validators.compose([Validators.required])],
     });
-
     this.dateFilter = (date: Date | null): boolean => {
       const today = new Date();
       const yesterday = new Date(today);
       yesterday.setDate(today.getDate() - 2);
-
       // Permite las fechas dentro del rango entre ayer y hoy
       return date! >= yesterday && date! <= today;
     }
-
 
     this.fechaInicio();
     let oficinaUsuario = this.authService.getOficina();
@@ -167,16 +167,13 @@ export class PrincipalPlaneacionComponent {
       this.inputCedis = true;
     } else {
       this.inputCedis = false;
-      console.log(oficinaUsuario);
       this.oficinasService.getOficina(oficinaUsuario).subscribe(response => {
-        console.log(response);
         this.inputValueLocal = response.plaza.toLocaleUpperCase();
-        console.log(this.inputValueLocal);
       }, (error: any) => {
         this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
       });
     }
-
+    //Validar los permisos que tiene el usuario en el modulo
     let obtienePermisosG = this.authService.validaPermisosGlobales(SISTEMA, MODULO);
     if (obtienePermisosG != undefined) {
       if (obtienePermisosG['respuesta'] == true) {
@@ -200,39 +197,46 @@ export class PrincipalPlaneacionComponent {
       this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
       this.router.navigate(['/home/inicio']);
     }
-
-    forkJoin([this.oficinaService.getOficinas(), this.oficinaService.getZonasInfluencia()]).subscribe(
-      ([cedis, zonasInfluencia]) => {
+    this.isLoading = true;
+    forkJoin([this.oficinaService.getOficinas(), this.oficinaService.getZonasInfluencia(), this.fleteService.getTipoVenta(), this.fleteService.getUbicacionTalon()]).subscribe(
+      ([cedis, zonasInfluencia, venta, ubicacionTalon]) => {
         this.cedis = cedis;
         this.zonasInfluencia = zonasInfluencia;
-      },
-      (error) => {
-        this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
-      }
-    );
-
-    forkJoin([this.fleteService.getTipoVenta(), this.fleteService.getUbicacionTalon()]).subscribe(
-      ([venta, ubicacionTalon]) => {
         this.ventaList = venta;
         this.tipoList = ubicacionTalon;
+        this.isLoading = false;
+        this.openSnackBar('Planeacion principal.', '✅', 3000);
       },
       (error) => {
+        this.isLoading = false;
         this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
       }
     );
-
   }
-  ventasSeleccionados = false;
-  tiposSeleccionados = false;
 
+/**
+    * seleccionarTodosVenta: Funcion para seleccionar todas las opciones del mat-select tipos venta
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-11
+   */
   seleccionarTodosVenta() {
     this.ventasSeleccionados = !this.ventasSeleccionados;
     if (this.ventasSeleccionados) {
       this.venta.setValue([...this.ventaList]);
+      this.fleteService.getUbicacionTalon().subscribe(
+        (tipo) => {
 
-      if(this.tipo.value.length!=2){
-        this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
-      }
+          const virtual = tipo.find(item => item.nombre === 'Virtual');
+          const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
+          if (virtual && tipoExiste == false) {
+              this.tipoList.push(virtual!);
+          }
+        },
+        (error) => {
+          this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
+        })
     } else {
       this.venta.setValue([]);
       this.fleteService.getUbicacionTalon().subscribe(
@@ -240,10 +244,8 @@ export class PrincipalPlaneacionComponent {
 
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if(virtual){
-            if(tipoExiste==false){
+          if (virtual && tipoExiste == false) {
               this.tipoList.push(virtual!);
-            }
           }
         },
         (error) => {
@@ -252,15 +254,16 @@ export class PrincipalPlaneacionComponent {
     }
   }
 
-
+/**
+    * seleccionarTodosTipo: Funcion para seleccionar todas las opciones del mat-select tipos de ubicacion de los talones
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-11
+   */
 
   seleccionarTodosTipo() {
-    if (this.tiposSeleccionados) {
-      this.tipo.setValue([]);
-    } else {
-      this.tipo.setValue(this.tipoList);
-    }
-
+    this.tipo.setValue(this.tiposSeleccionados ? [] :this.tipoList);
     const isPisoSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Piso');
     const isPisoVirtual = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
     if (isPisoSelected == true || isPisoVirtual == true) {
@@ -269,7 +272,6 @@ export class PrincipalPlaneacionComponent {
       } else {
         this.fleteService.getTipoVenta().subscribe(
           (venta) => {
-            console.log(this.ventaList.some((item) => item.nombre === 'Local'));
             if (this.ventaList.some((item) => item.nombre === 'Local') != true) {
               const localVenta = venta.find(item => item.nombre === 'Local');
               if (localVenta) {
@@ -290,13 +292,13 @@ export class PrincipalPlaneacionComponent {
       duration: tiempo
     });
   }
-
-  filterDates(date: Date): boolean {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    return date <= today && date >= yesterday;
-  }
+  /**
+    * fechaInicio: Funcion para obtener fechas del dia de actual y anterior
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-11
+   */
 
   fechaInicio() {
     document.addEventListener('DOMContentLoaded', () => {
@@ -324,57 +326,82 @@ export class PrincipalPlaneacionComponent {
       });
     });
   }
+  /**
+    * onInputSucursales: Funcion para el evento del filtrado en el mat-input zonas
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-14
+   */
 
   onInputSucursales(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredSucursales = this.filtrarDatosCedis(query);
+    this.filteredSucursales = this.filtrarDatosCedis(inputElement.value);
   }
+  /**
+    * onInputZonas: Funcion para el evento del filtrado en el mat-input cedis
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-14
+   */
+
   onInputZonas(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredZonas = this.filtrarDatosZonasInfluencia(query);
+    this.filteredZonas = this.filtrarDatosZonasInfluencia(inputElement.value);
   }
 
+/**
+    * formatDate: Funcion para obtener formato de la fecha
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-14
+   */
 
   formatDate(date: any) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return moment(date).format('YYYY-MM-DD');
   }
-
+/**
+    * openDialog: Funcion para abrir modal de guardar corte
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-14
+   */
   openDialog(): void {
+    this.formGroupCorte.reset();
     this.dialog.open(this.dialogCorte);
   }
-  openDialogPermisos(): void {
-    this.dialog.open(this.dialogRoles);
-  }
+/**
+    * oncloseDialog: Funcion para cerrar modal de guardar corte
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-14
+   */
   oncloseDialog(): void {
     this.dialog.closeAll();
-
   }
 
-  drop(event: CdkDragDrop<string[]>) {
-    if (event.previousContainer === event.container) {
-      moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
-    } else {
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex,
-      );
-    }
-  }
-  getColumnIndex(columnName: string): number {
-    return this.displayedColumns.indexOf(columnName);
-  }
-
+  /**
+    * displayFn: Funcion de filtrado para mostrar la informacion en el mat-input de los cedis
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   displayFn(sucursal: any): string {
-    this.selectedSatelite = sucursal.idOficina;
+    this.selectedSatelite = sucursal?.idOficina;
     return sucursal ? sucursal.nombreOficina : '';
   }
+  /**
+    * displayFnZonas: Funcion de filtrado para mostrar la informacion en el mat-input zonas de influencia
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   displayFnZonas(zona: any): string {
     if (zona) {
       this.selectedZonasInfluencia = zona.idZona;
@@ -383,104 +410,104 @@ export class PrincipalPlaneacionComponent {
       return '';
     }
   }
+/**
+    * filtrarDatosCedis: Funcion para obtener el filtrado del mat-input de los cedis
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   filtrarDatosCedis(query: string): any[] {
-    let filtered: any[] = [];
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      filtered = this.cedis.filter((sucursal) =>
-        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
-      );
-    } else {
-      filtered = this.cedis;
-    }
-    return filtered;
+    return  query ?  this.cedis.filter((sucursal) =>
+        sucursal.nombreOficina.toLowerCase().includes(query.toLowerCase())
+      ) : this.cedis;
   }
+  /**
+    * filtrarDatosZonasInfluencia: Funcion para obtener el filtrado del mat-input zonas de influencia
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   filtrarDatosZonasInfluencia(query: string): any[] {
-    let filteredZona: any[] = [];
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      filteredZona = this.zonasInfluencia.filter((zona) =>
-        zona.nombre.toLowerCase().includes(lowercaseQuery)
-      );
-    } else {
-      filteredZona = this.zonasInfluencia;
-    }
-    return filteredZona;
+    return  query ?  this.zonasInfluencia.filter((zona) =>
+    zona.nombre.toLowerCase().includes(query.toLowerCase())
+      ) : this.zonasInfluencia;
   }
-
+  /**
+    * onFechaInicioChange, onFechaFinChange: Funcion para obtener el valor de los may-input tipo date
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-16
+   */
   onFechaInicioChange(event: any) {
     return event.value;
   }
+
   onFechaFinChange(event: any) {
     return event.value;
   }
+  /**
+    * buscar: Funcion para buscar los talones
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-16
+   */
 
   buscar() {
-    this.isLoading=true;
     const fechaInicio = this.formGroupFiltro.get('fechaInicio').value;
     const fechaFinal = this.formGroupFiltro.get('fechaFin').value;
     const zonaInfluencia = this.formGroupFiltro.get('zona').value;
     const cedisOrigen = this.formGroupFiltro.get('idCedis').value;
-    let tabla1 = new MatTableDataSource<DatosTalon>()
-    let tabla2 = new MatTableDataSource<DatosTalon>()
-    let tabla3 = new MatTableDataSource<DatosTalon>()
-    let local = 0;
-    let agencia = 0;
-    let satelite = 0;
-
+    let tablaList1 = new MatTableDataSource<DatosTalon>()
+    let tablaList2 = new MatTableDataSource<DatosTalon>()
+    let tablaList3 = new MatTableDataSource<DatosTalon>()
     let inicio = new Date(fechaInicio);
-    let año = inicio.getFullYear();
-    let mes = String(inicio.getMonth() + 1).padStart(2, '0');
-    let dia = String(inicio.getDate()).padStart(2, '0');
-
     const columnasOcultas = ['tipoGuia', 'noEconomico'];
-
-    const fechaIniciaFormato = `${año}-${mes}-${dia}`;
+    const fechaIniciaFormato =  moment(inicio).format('YYYY-MM-DD');
     let fin = new Date(fechaFinal);
-    año = fin.getFullYear();
-    mes = String(fin.getMonth() + 1).padStart(2, '0');
-    dia = String(fin.getDate()).padStart(2, '0');
-
-    const fechaFinalFormato = `${año}-${mes}-${dia}`;
-
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Local')) {
-      local = 1;
-    }
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Agencia')) {
-      agencia = 1;
-    }
-    if (this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite')) {
-      satelite = 1;
-    }
-
+    const fechaFinalFormato =  moment(fin).format('YYYY-MM-DD');
+    const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombreOficina;
+    console.log(idCedisInput);
+    let local = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Local'));
+    let agencia = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Agencia'));
+    let satelite = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite'));
     let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
+    console.log(cedisOrigen.idOficina);
     if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
     } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha de inicio', '⛔', 3000);
     } else if (fechaFinalFormato == null || fechaFinalFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha final', '⛔', 3000);
+    } else if (fechaIniciaFormato > fechaFinalFormato) {
+      this.openSnackBar('La fecha inicio no puede ser mayor a fecha fin', '⛔', 3000);
     } else if (this.venta.value == null) {
       this.openSnackBar('Debes de seleccionar minimo un tipo venta', '⛔', 3000);
     } else if (this.tipo.value == null) {
       this.openSnackBar('Debes de seleccionar el tipo de la ubicacion del talon', '⛔', 3000);
     } else if (this.tipo.value.length == 2 && this.venta.value.length == 3) {
-
+      this.isLoading = true;
       let datosConsultaPisoAgenciaSatelite = {
         "agencia": 1,
         "satelite": 1,
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
-
       let datosConsultaPisoLocal = {
         "agencia": 0,
         "satelite": 0,
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
       let datosConsultaVirtual = {
@@ -489,98 +516,127 @@ export class PrincipalPlaneacionComponent {
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
+        "nombreOrigen": "" + idCedisInput,
         "zonaDeInfluencia": zonaInfluencia.idZona
       }
-
       forkJoin([this.fleteService.getPisoAgenciaSatelite(datosConsultaPisoAgenciaSatelite), this.fleteService.getPisoLocal(datosConsultaPisoLocal),
       this.fleteService.getVirtualAgenciaSatelite(datosConsultaVirtual)]).subscribe(([piso, local, virtual]) => {
-        tabla1 = new MatTableDataSource<DatosTalon>(piso as DatosTalon[]);
-        tabla2 = new MatTableDataSource<DatosTalon>(local as DatosTalon[]);
-        tabla3 = new MatTableDataSource<DatosTalon>(virtual as DatosTalon[]);
-        this.dataSource = new MatTableDataSource([...tabla1.data, ...tabla2.data, ...tabla3.data]);
+        tablaList1 = new MatTableDataSource<DatosTalon>(piso as DatosTalon[]);
+        tablaList2 = new MatTableDataSource<DatosTalon>(local as DatosTalon[]);
+        tablaList3 = new MatTableDataSource<DatosTalon>(virtual as DatosTalon[]);
+        this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
         this.dataSource.paginator = this.paginator;
         this.paginator.pageSize = 5;
         this.dataSource.sort = this.tablaPlaneacionSort;
-        this.mostrarBoton = true;
-        this.isLoading=false;
-      });
+        let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
+        this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+        this.isLoading = false;
+        console.log(this.dataSource.data)
+      }),
+      (error: any) => {
+        this.mostrarBoton = false;
+        this.isLoading = false;
+        this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+      };
       columnasOcultas.forEach((columna) => {
         if (!this.displayedColumns.includes(columna)) {
           this.displayedColumns.push(columna);
         }
       });
-      this.displayedColumns = this.columnasMostradas;
     } else {
+      this.isLoading = true;
       let datosConsulta = {
         "agencia": agencia,
         "satelite": satelite,
         "fechaInicio": fechaIniciaFormato,
         "fechaFin": fechaFinalFormato,
         "origen": Number(oficina),
-        "zonaDeInfluencia": zonaInfluencia.idZona
+        "nombreOrigen": "" + idCedisInput,
+        "zonaDeInfluencia": zonaInfluencia?.idZona
       }
       if (this.tipo.value.some((u: ubicacionTalon) => u.nombre === 'Piso')) {
         if (satelite == 1 || agencia == 1) {
-          this.fleteService.getPisoAgenciaSatelite(datosConsulta).subscribe(
-            (success: any) => {
-              console.log(success);
-              tabla1 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
-              this.dataSource = new MatTableDataSource([...tabla1.data, ...tabla2.data]);
-              this.dataSource.paginator = this.paginator;
-              this.paginator.pageSize = 5;
-              this.dataSource.sort = this.tablaPlaneacionSort;
-              this.mostrarBoton = true;
-              if(local==0){
-                this.isLoading=false;
-
-                this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+          if(this.tipo.value.some((u: ubicacionTalon) => u.nombre === 'Virtual')){
+            forkJoin([this.fleteService.getPisoAgenciaSatelite(datosConsulta),
+              this.fleteService.getVirtualAgenciaSatelite(datosConsulta)]).subscribe(([piso, virtual]) => {
+                tablaList1 = new MatTableDataSource<DatosTalon>(piso as DatosTalon[]);
+                tablaList3 = new MatTableDataSource<DatosTalon>(virtual as DatosTalon[]);
+                this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+                this.dataSource.paginator = this.paginator;
+                this.paginator.pageSize = 5;
+                this.dataSource.sort = this.tablaPlaneacionSort;
+                let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
+                this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+                this.isLoading = false;
+              }),
+              (error: any) => {
+                this.mostrarBoton = false;
+                this.isLoading = false;
+                this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
               }
+              local=0;
+              columnasOcultas.forEach((columna) => {
+                if (!this.displayedColumns.includes(columna)) {
+                  this.displayedColumns.push(columna);
+                }
+              });
+          }else{
+            this.fleteService.getPisoAgenciaSatelite(datosConsulta).subscribe(
+              (success: any) => {
+                tablaList1 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
+                this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+                this.dataSource.paginator = this.paginator;
+                this.paginator.pageSize = 5;
+                this.dataSource.sort = this.tablaPlaneacionSort;
+                if (local != 1) {
+                  let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
+                  this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
+                  this.isLoading = false;
+                }
+              },
+              (error: any) => {
+                this.mostrarBoton = false;
+                this.isLoading = false;
+                this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
+              });
+          }
 
-            },
-            (error: any) => {
-              this.mostrarBoton = false;
-              this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
-            });
         }
         if (local == 1) {
-
           datosConsulta = {
             "agencia": 0,
             "satelite": 0,
             "fechaInicio": fechaIniciaFormato,
             "fechaFin": fechaFinalFormato,
             "origen": Number(oficina),
+            "nombreOrigen": "" + idCedisInput,
             "zonaDeInfluencia": zonaInfluencia.idZona
           }
           this.fleteService.getPisoLocal(datosConsulta).subscribe(
             (success: any) => {
-              console.log(success);
-              tabla2 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
-              this.dataSource = new MatTableDataSource([...tabla1.data, ...tabla2.data]);
-              console.log(this.dataSource);
+              tablaList2 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
+              this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;
-              this.mostrarBoton = true;
-              this.isLoading=false;
-              this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+              this.isLoading = false;
+              let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
+              this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
             },
             (error: any) => {
               this.mostrarBoton = false;
-              this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+              this.isLoading = false;
+              this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
             });
+            const columnas=this.columnasMostradas;
+            columnasOcultas.forEach((columna) => {
+              const indice = columnas.indexOf(columna);
+              if (indice !== -1) {
+                columnas.splice(indice, 1);
+              }
+            });
+            this.displayedColumns = columnas;
         }
-
-        columnasOcultas.forEach((columna) => {
-          const indice = this.columnasMostradas.indexOf(columna);
-          if (indice !== -1) {
-            this.columnasMostradas.splice(indice, 1);
-          }
-        });
-        this.displayedColumns = this.columnasMostradas;
-
-
-
       } else if (this.tipo.value.some((u: ubicacionTalon) => u.nombre === 'Virtual') || (satelite == 1 || agencia == 1)) {
 
         columnasOcultas.forEach((columna) => {
@@ -591,57 +647,71 @@ export class PrincipalPlaneacionComponent {
         this.displayedColumns = this.columnasMostradas;
         this.fleteService.getVirtualAgenciaSatelite(datosConsulta).subscribe(
           (success: any) => {
-            console.log(success);
             this.dataSource = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
-            console.log(this.dataSource);
             this.dataSource.paginator = this.paginator;
             this.paginator.pageSize = 5;
             this.dataSource.sort = this.tablaPlaneacionSort;
-            this.isLoading=false;
-            this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
+            this.isLoading = false;
+            let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
+            this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
           },
           (error: any) => {
-            this.openSnackBar('Hubo un error al hcaer la consulta.', '⛔', 3000);
+            this.mostrarBoton = false;
+            this.isLoading = false;
+            this.openSnackBar('Hubo un error al hacer la consulta.', '⛔', 3000);
           });
       }
     }
+
   }
+  /**
+    * calcularSumatoria: Funcion para calcular la sumatoria de las columnas seleccionadas en el html
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-16
+   */
 
   calcularSumatoria(columna: keyof DatosTalon): number {
-    return this.dataSource.filteredData.slice().reduce((sum, currentRow) => {
+    const sum = this.dataSource.filteredData.slice().reduce((sum, currentRow) => {
       const value = currentRow[columna];
       return typeof value === 'number' ? sum + value : sum;
     }, 0);
+
+    return parseFloat(sum.toFixed(2));
   }
+  /**
+    * validaInformacion: Funcion para validar la informacion
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-16
+   */
 
   validaInformacion(dato: any): boolean {
-    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
-      return true;
-    }
-    else {
-      return false;
-    }
+      return (dato != undefined && dato != null && dato != '' && dato != "Invalid Date");
   }
-
+  /**
+    * guardarCorte: Funcion para guardar el corte de la lista de todos los talones encontrados y filtrados
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-17
+   */
   guardarCorte() {
-    this.isLoading=true;
-    console.log(this.dataSource.filteredData.slice());
-
-    if(this.dataSource.data.length<=0){
+    if (this.dataSource.data.length <= 0) {
       this.openSnackBar('No puedes agregar un corte sin tener talones en la tabla.', '⛔', 3000);
-    }else{
-
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = ("0" + (today.getMonth() + 1)).slice(-2);
-      const day = ("0" + today.getDate()).slice(-2);
-      const horas = today.getHours();
-      const minutos = today.getMinutes();
-      const segundos = today.getSeconds();
-      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-      const formattedDate = `${year}-${month}-${day}`;
-
+    }else if(this.formGroupCorte.get('descripcionCorte').value.length<=10){
+      this.openSnackBar('La accion debe de tener mas de 10 caracteres.', '⛔', 3000);
+    }else {
+      let hoy = new Date();
+      const formattedDate =  moment(hoy).format('YYYY-MM-DD');
+      const tiempo = moment(hoy).format('HH:mm:ss');;
       const cedisOrigen = this.formGroupFiltro.get('idCedis').value;
+      const accion = this.formGroupCorte.get('descripcionCorte').value;
       const jsonData = JSON.stringify(this.dataSource.filteredData.slice());
       const idTipoVentaValues = this.venta.value.map((item: { idTipoVenta: number; }) => item.idTipoVenta);
       idTipoVentaValues.sort((a: number, b: number) => a - b);
@@ -658,58 +728,79 @@ export class PrincipalPlaneacionComponent {
         "idOficina": oficina,
         "tipoCorte": "" + idUbicacionTalonString,
         "tipoVenta": "" + idTipoVentaString,
-        "accion": "actualizar",
+        "accion": accion,
         "descripcionTabla": "" + jsonData,
         "estatus": 1,
         "idPersonal": this.obtenerIdPersonal(),
         "fechaMod": formattedDate,
         "horaMod": tiempo
       }
+      this.isLoading = true;
       this.consultaCorteService.setCorte(corte).subscribe(
         (success: any) => {
-          this.isLoading=false;
           this.openSnackBar('Se guardo de manera exitosa!', '✅', 3000);
-          this.mostrarBoton=false;
+          this.mostrarBoton = false;
+          this.isLoading = false;
         },
         (error: any) => {
+          this.mostrarBoton = false;
+          this.isLoading = false;
           this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
         });
-
     }
   }
+  openDialogPermisos(): void {
+    this.dialog.open(this.dialogRoles);
+  }
+
+  /**
+    * obtenerIdPersonal: Funcion para obtener el idPersonal del usuario
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
 
   obtenerIdPersonal(): string {
     let usuarioJson = JSON.parse(sessionStorage.getItem('usuario')!);
     return usuarioJson.id;
   }
-
+  /**
+    * obtenerIdOficina: Funcion para obtener el idOficina del usuario
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   obtenerIdOficina(): string {
     let idoficinaJson = JSON.parse(sessionStorage.getItem('usuario')!);
     return idoficinaJson.claveOficina;
   }
+  /**
+    * bloquearOpcionPiso: Funcion para cambiar las opciones de los tipo venta
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
 
   bloquearOpcionPiso() {
     const isPisoSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Piso');
     const isPisoVirtual = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
     if (isPisoSelected == true || isPisoVirtual == true) {
-      if (isPisoSelected == true && isPisoVirtual == true) {
-        this.tiposSeleccionados = true;
-      } else {
-        this.tiposSeleccionados = false;
-      }
-      console.log(isPisoVirtual);
-
+      this.tiposSeleccionados = (isPisoSelected == true && isPisoVirtual == true) ;
       if (isPisoVirtual && isPisoSelected == false) {
         this.ventaList = this.ventaList.filter((item) => item.nombre !== 'Local');
-      }else {
+      } else {
         this.fleteService.getTipoVenta().subscribe(
           (venta) => {
             const localVenta = venta.find(item => item.nombre === 'Local');
             const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
-            if (localVenta) {
-              if(ventaExiste==false){
+            if (localVenta && ventaExiste == false) {
                 this.ventaList.push(localVenta);
-              }
             }
           },
           (error) => {
@@ -718,16 +809,12 @@ export class PrincipalPlaneacionComponent {
         );
       }
     } else {
-      console.log("virtual")
       this.fleteService.getTipoVenta().subscribe(
         (venta) => {
           const localVenta = venta.find(item => item.nombre === 'Local');
           const ventaExiste = this.ventaList.some((venta: { nombre: string; }) => venta.nombre === 'Local')
-          if (localVenta) {
-            console.log(ventaExiste);
-            if(ventaExiste==false){
+          if (localVenta && ventaExiste == false) {
               this.ventaList.push(localVenta);
-            }
           }
         },
         (error) => {
@@ -737,46 +824,41 @@ export class PrincipalPlaneacionComponent {
       this.tiposSeleccionados = false;
     }
   }
-
+/**
+    * onVentaSelectionChange: Funcion para cambiar las opciones de los tipo de ubicaciones de los talones
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
   onVentaSelectionChange() {
     const isLocalSelected = this.venta.value.some((venta: { nombre: string; }) => venta.nombre === 'Local');
     const isAgenciaVirtual = this.venta.value.some((venta: { nombre: string; }) => venta.nombre === 'Satélite');
     const isSateliteSelected = this.venta.value.some((venta: { nombre: string; }) => venta.nombre === 'Agencia');
     const isVirtualSelected = this.tipo.value.some((tipo: { nombre: string; }) => tipo.nombre === 'Virtual');
 
-    if (isLocalSelected == true && isAgenciaVirtual == true && isSateliteSelected == true) {
-      this.ventasSeleccionados = true;
-    } else {
-      this.ventasSeleccionados = false;
-    }
-    console.log(isLocalSelected);
-    console.log(isAgenciaVirtual);
-    console.log(isSateliteSelected);
-    console.log(this.tipo.value.length);
+    this.ventasSeleccionados = (isLocalSelected == true && isAgenciaVirtual == true && isSateliteSelected == true);
     if (isLocalSelected == true || isAgenciaVirtual == true || isSateliteSelected == true) {
-      if(isLocalSelected==true && this.tipo.value.length!=2){
+      if (isLocalSelected == true && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isLocalSelected==true && isAgenciaVirtual == false && isSateliteSelected == false && this.tipo.value.length!=2){
+      if (isLocalSelected == true && isAgenciaVirtual == false && isSateliteSelected == false && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isAgenciaVirtual==true && isSateliteSelected==true && isLocalSelected==false && this.tipo.value.length ==1 && isVirtualSelected == false){
+      if (isAgenciaVirtual == true && isSateliteSelected == true && isLocalSelected == false && this.tipo.value.length == 1 && isVirtualSelected == false) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Virtual');
       }
-      if(isAgenciaVirtual==true && isSateliteSelected==true && isLocalSelected==false && this.tipo.value.length!=2){
+      if (isAgenciaVirtual == true && isSateliteSelected == true && isLocalSelected == false && this.tipo.value.length != 2) {
         this.tipoList = this.tipoList.filter((item) => item.nombre !== 'Local');
       }
     } else {
-      console.log("fuera");
       this.fleteService.getUbicacionTalon().subscribe(
         (tipo) => {
-
           const virtual = tipo.find(item => item.nombre === 'Virtual');
           const tipoExiste = this.tipoList.some((venta: { nombre: string; }) => venta.nombre === 'Virtual')
-          if(virtual){
-            if(tipoExiste==false){
+          if (virtual && tipoExiste == false) {
               this.tipoList.push(virtual!);
-            }
           }
         },
         (error) => {
@@ -786,6 +868,15 @@ export class PrincipalPlaneacionComponent {
     }
 
   }
+
+/**
+    * applyFilter: Funcion para aplicar el filtro en la tabla de pleaneacion principal
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
 
   applyFilter() {
     const filters = {
@@ -797,6 +888,7 @@ export class PrincipalPlaneacionComponent {
       volumen: this.valumenFiltro.value,
       queContiene: this.contieneFiltro.value,
       origen: this.origenFiltro.value,
+      documenta: this.DocumentaFiltro.value,
       tipo: this.tipoFiltro.value,
       venta: this.ventaFiltro.value,
       destino: this.destinoFiltro.value,
@@ -807,22 +899,50 @@ export class PrincipalPlaneacionComponent {
     this.dataSource.filterPredicate = (data: DatosTalon, filter: string) => {
       const filtersObj = JSON.parse(filter);
       const claTalonMatch = data.claTalon?.toString().toLowerCase().includes(filtersObj.claTalon?.toLowerCase() || '');
-      const tipoTalonMatch = data.tipoTalon?.toLowerCase().includes(filtersObj.tipoTalon?.toLowerCase() || '');
+      const tipoTalonFiltered = this.removeAccentsAndLowercase(filtersObj.tipoTalon || '');
+      const tipoTalonData = this.removeAccentsAndLowercase(data.tipoTalon || '');
+      const tipoTalonMatch = tipoTalonData.includes(tipoTalonFiltered);
       const fleteMatch = data.flete?.toString().toLowerCase().includes(filtersObj.flete?.toLowerCase() || '');
       const cdpMatch = data.cdp?.toString().toLowerCase().includes(filtersObj.cdp?.toLowerCase() || '');
       const bultoMatch = data.bulto?.toString().toLowerCase().includes(filtersObj.bulto?.toLowerCase() || '');
       const volumenMatch = data.volumen?.toString().toLowerCase().includes(filtersObj.volumen?.toLowerCase() || '');
+      const contieneMatch = data.queContiene?.toString().toLowerCase().includes(filtersObj.queContiene?.toLowerCase() || '');
+      const documentaMatch = data.nombreOficinaDocumenta?.toLowerCase().includes(filtersObj.documenta?.toLowerCase() || '');
       const origenMatch = data.origen?.toLowerCase().includes(filtersObj.origen?.toLowerCase() || '');
       const tipoMatch = data.tipo?.toLowerCase().includes(filtersObj.tipo?.toLowerCase() || '');
       const ventaMatch = data.venta?.toLowerCase().includes(filtersObj.venta?.toLowerCase() || '');
       const destinoMatch = data.destino?.toLowerCase().includes(filtersObj.destino?.toLowerCase() || '');
       const tipoGuiaMatch = data.tipoGuia?.toLowerCase().includes(filtersObj.tipoGuia?.toLowerCase() || '');
       const noEconomicoMatch = data.noEconomico?.toString().toLowerCase().includes(filtersObj.noEconomico?.toLowerCase() || '');
-
-      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
+      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && contieneMatch && documentaMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
     };
-
     this.dataSource.filter = JSON.stringify(filters);
+  }
+  removeAccentsAndLowercase(text: string): string {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
+  /**
+    * limpiarFormulario: Funcion para limpiar formulario para la busqueda de los talones.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-07-15
+   */
+
+  limpiarFormulario(): void {
+    this.tipo.setValue([]);
+    this.venta.setValue([]);
+    this.formGroupFiltro.reset({
+      idCedisLocal: this.inputValueLocal
+    });
+    this.selectedCedis=null;
+    this.selectedZona=null;
+    this.formGroupFiltro.get('idCedis')?.setValue(null);
+    this.formGroupFiltro.get('zona')?.setValue(null);
+    this.dataSource = new MatTableDataSource<DatosTalon>();
+    this.dataSource.sort = this.sort;
   }
 }
 

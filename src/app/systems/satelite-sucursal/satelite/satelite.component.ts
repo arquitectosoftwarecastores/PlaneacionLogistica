@@ -10,7 +10,6 @@ import { sateliteService } from 'src/app/services/satelite.service';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { Pipe, PipeTransform } from '@angular/core';
 import { sucursales_satelite } from 'src/app/interfaces/sucursales_satelite';
 import { satelite } from 'src/app/interfaces/satelite';
 import { cedis } from 'src/app/interfaces/oficina';
@@ -34,7 +33,7 @@ export interface UserData {
     { provide: MatPaginatorIntl, useValue: CustomPaginator() }
   ]
 })
-export class SateliteComponent implements OnInit   {
+export class SateliteComponent implements OnInit {
   public permisoAInsertarAgregar: any = 0;
   private permisoBConsultar: any = 0;
   private permisoCEliminar: any = 0;
@@ -56,7 +55,7 @@ export class SateliteComponent implements OnInit   {
   idOficinaSatelite!: number;
   displayedColumns: string[] = ['nombrePertenece', 'nombreSatelite', 'estatus', 'nombrePersonal', 'fechaMod', 'idOficinaSatelite'];
   sucursales: cedis[] = [];
-  satelites: satelite[] = [];
+  satelites: cedis[] = [];
   selectedSucursal: any;
   selectedSatelite: any;
   filteredSucursales: any[] = [];
@@ -70,8 +69,6 @@ export class SateliteComponent implements OnInit   {
   defaultSatelite = '';
   isDisabled: boolean = false;
   isDivBlocked: boolean = true;
-  agregar: any;
-  modificar: any;
 
   public dataSource = new MatTableDataSource<sucursales_satelite>();
 
@@ -79,10 +76,12 @@ export class SateliteComponent implements OnInit   {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild('dialogModificar') dialogModificar!: TemplateRef<any>;
   @ViewChild('dialogAgregar') dialogAgregar!: TemplateRef<any>;
-  @ViewChild('tablaSateliteSort', { static: true }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
+  @ViewChild('tablaSateliteSort', { static: false }) set tablaSateliteSort(tablaSateliteSort: MatSort) {
     if (this.validaInformacion(tablaSateliteSort)) this.dataSource.sort = tablaSateliteSort;
   }
 
+  agregar: any;
+  modificar: any;
   constructor(public dialog: MatDialog, private sateliteService: sateliteService, private formBuilder: FormBuilder,
     public snackBar: MatSnackBar, private router: Router, private authService: AuthService,private oficinaService: oficinasService)
     {}
@@ -112,6 +111,7 @@ export class SateliteComponent implements OnInit   {
       ([oficinas, satelite]) => {
         this.sucursales = oficinas;
         this.satelites = satelite;
+        this.openSnackBar('Satelites Sucursal', '✅', 3000);
       },
       (error) => {
         this.openSnackBar('Hubo un error al consultar', '⛔', 3000);
@@ -350,7 +350,6 @@ export class SateliteComponent implements OnInit   {
     this.placeholderSucursal = '';
     this.inputOficinaSatelite = false;
     this.inputSatelites = true;
-    this.isDivBlocked=true;
     this.estatus=1;
     this.isDivBlocked=true;
     this.formGroupSatelite.controls['estatusSatelite'].setValue(true);
@@ -372,14 +371,15 @@ export class SateliteComponent implements OnInit   {
     this.inputSatelites = false;
     this.isDisabled=false;
     this.isDivBlocked=false
+    this.isLoading=true;
     this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
-      console.log(response);
-    this.inputValue = response.idOficinaSatelite;
-    this.placeholderText = response.nombreSatelite;
-    this.defaultSatelite = response.idOficinaPertenece;
-    this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
-    this.placeholderSucursal = response.nombrePertenece;
-    this.estatus=response.estatus;
+      this.inputValue = response.idOficinaSatelite;
+      this.placeholderText = response.nombreSatelite;
+      this.defaultSatelite = response.idOficinaPertenece;
+      this.formGroupSatelite.controls['estatusSatelite'].setValue(response.estatus === 1 ? true : false);
+      this.placeholderSucursal = response.nombrePertenece;
+      this.estatus=response.estatus;
+      this.isLoading=false;
       this.openDialog();
     }, (error: any) => {
       this.openSnackBar('Hubo un error al consultar el satelite', '⛔', 3000);
@@ -388,7 +388,6 @@ export class SateliteComponent implements OnInit   {
   }
 
   displayFn(sucursal: any): string {
-    console.log(sucursal);
     this.selectedSatelite = sucursal.idOficina;
     return sucursal ? sucursal.nombreOficina : '';
   }
@@ -475,6 +474,7 @@ export class SateliteComponent implements OnInit   {
       this.paginator.pageSize = 5;
       this.dataSource.sort = this.tablaSateliteSort;
       this.isLoading = false;
+      this.openSnackBar('Se realizo la consulta de manera exitosa.', '✅', 3000);
     },
       (error: any) => {
         this.openSnackBar('Hubo un error al cargar los datos', '⛔', 3000);

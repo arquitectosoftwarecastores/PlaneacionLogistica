@@ -5,6 +5,7 @@ import { ConsultaCorteComponent } from './consulta-corte/consulta-corte.componen
 import { FleteOptimoComponent } from './flete-optimo/flete-optimo.component';
 import { AuthGuard } from 'src/app/authentication/login/guards/auth.guard';
 import { RoleGuard } from 'src/app/authentication/login/guards/role.guard';
+import { DetallesCorteComponent } from './detalles-corte/detalles-corte.component';
 
 const routes: Routes = [];
 export const fletesRoutes: Routes = [
@@ -27,8 +28,17 @@ export const fletesRoutes: Routes = [
         }
       },
       {
-        path: 'consultaCorte',
+        path: 'consultaCorte/:fechaInicio/:fechaFin',
         component: ConsultaCorteComponent,
+        canActivate: [AuthGuard,RoleGuard],
+        data: {
+          sistema: 14,
+          modulo: 79
+        }
+      },
+      {
+        path: 'DetallesCorte/:fechaInicio/:fechaFin/:idCorte',
+        component: DetallesCorteComponent,
         canActivate: [AuthGuard,RoleGuard],
         data: {
           sistema: 14,
