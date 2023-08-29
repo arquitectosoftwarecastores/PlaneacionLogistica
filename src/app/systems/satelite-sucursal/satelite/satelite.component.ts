@@ -275,6 +275,9 @@ export class SateliteComponent implements OnInit {
     const formattedDate = `${year}-${month}-${day}`;
     const sateliteSeleccionado = this.formGroupSatelite.value.idSatelite;
     const sucursalSeleccionado = this.formGroupSatelite.value.idSucursal;
+    console.log(sateliteSeleccionado)
+    console.log(sucursalSeleccionado)
+
     if (this.modo === 'agregar') {
       this.agregar = {
         idOficinaSatelite: sateliteSeleccionado.idOficina,

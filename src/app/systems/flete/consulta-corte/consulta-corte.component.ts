@@ -26,6 +26,7 @@ export interface UserData {
     { provide: MatPaginatorIntl, useValue: CustomPaginator() }
   ]
 })
+
 export class ConsultaCorteComponent implements OnInit {
 
   public permisoAInsertarAgregar: any = 0;

@@ -123,10 +123,6 @@
             <input type="text" class="form-control" [formControl]="tipoTalonFiltro" aria-label="Filtro"
               aria-describedby="basic-addon1" (input)="applyFilter();">
           </div>
-        </th>
-        <td mat-cell *matCellDef="let row">{{row.tipoTalon}} </td>
-        <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef>Sumatoria:</td>
-      </ng-container>
       <ng-container matColumnDef="flete">
         <th mat-header-cell *matHeaderCellDef> Flete
           <div>
