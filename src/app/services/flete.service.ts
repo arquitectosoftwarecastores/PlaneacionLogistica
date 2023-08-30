@@ -33,7 +33,6 @@ export class fletesService {
     return this.http.get<CircuitoFleteOptimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/getByIdFleteOptimo/`+idCircuito);
   }
   updateCircuito(circuito:any){
-    console.log(circuito);
     return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/update`, circuito)
     .pipe(
       catchError(e => {
@@ -52,7 +51,6 @@ export class fletesService {
   }
 
   updateFlete(data:any){
-    console.log(data);
     return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/update`, data)
     .pipe(
       catchError(e => {
@@ -76,7 +74,6 @@ export class fletesService {
     );
   }
   createCircuito(circuito:any){
-    console.log(circuito);
     return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/create`, circuito)
     .pipe(
       catchError(e => {

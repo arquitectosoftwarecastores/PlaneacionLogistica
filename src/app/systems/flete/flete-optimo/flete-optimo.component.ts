@@ -19,6 +19,7 @@ import { sateliteService } from 'src/app/services/satelite.service';
 import { ruta } from 'src/app/interfaces/ruta';
 import { CircuitoFleteOptimo } from 'src/app/interfaces/circuitos';
 import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
+import * as moment from 'moment';
 
 
 
@@ -162,7 +163,6 @@ export class FleteOptimoComponent implements OnInit {
       ([oficinas, zona, circuitos]) => {
 
         this.sucursales = oficinas;
-        console.log(this.sucursales);
         this.zonasInfluencia = zona;
 
         this.ruta = circuitos;
@@ -277,12 +277,7 @@ export class FleteOptimoComponent implements OnInit {
    */
 
   validaInformacion(dato: any): boolean {
-    if (dato != undefined && dato != null && dato != '' && dato != "Invalid Date") {
-      return true;
-    }
-    else {
-      return false;
-    }
+    return dato !== undefined && dato !== null && dato !== '' && dato !== "Invalid Date" ? true : false;
   }
 
   /**
@@ -341,8 +336,7 @@ export class FleteOptimoComponent implements OnInit {
 
   onInputSucursales(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredSucursales = this.filtrarDatosSucursal(query);
+    this.filteredSucursales = this.filtrarDatosSucursal(inputElement.value);
   }
 
   /**
@@ -362,7 +356,6 @@ export class FleteOptimoComponent implements OnInit {
       filtered = this.sucursales.filter((sucursal) =>
         sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
       );
-      console.log(filtered);
     } else {
       filtered = this.sucursales;
     }
@@ -400,12 +393,7 @@ export class FleteOptimoComponent implements OnInit {
 
 
   displayFnZonas(zona: any): string {
-    if (zona) {
-      this.selectedZonasInfluencia = zona.idZona;
-      return zona.nombre;
-    } else {
-      return '';
-    }
+    return zona ? ((this.selectedZonasInfluencia = zona.idZona), zona.nombre) : '';
   }
 
   /**
@@ -420,8 +408,7 @@ export class FleteOptimoComponent implements OnInit {
 
   onInputZonas(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
-    const query = inputElement.value;
-    this.filteredZonas = this.filtrarDatosZonasInfluencia(query);
+    this.filteredZonas = this.filtrarDatosZonasInfluencia(inputElement.value);
   }
 
   /**
@@ -435,16 +422,7 @@ export class FleteOptimoComponent implements OnInit {
 
 
   filtrarDatosZonasInfluencia(query: string): any[] {
-    let filteredZona: any[] = [];
-    if (query) {
-      const lowercaseQuery = query.toLowerCase();
-      filteredZona = this.zonasInfluencia.filter((zona) =>
-        zona.nombre.toLowerCase().includes(lowercaseQuery)
-      );
-    } else {
-      filteredZona = this.zonasInfluencia;
-    }
-    return filteredZona;
+    return query? this.zonasInfluencia.filter(zona => zona.nombre.toLowerCase().includes(query.toLowerCase())): this.zonasInfluencia;
   }
 
   /**
@@ -524,14 +502,8 @@ export class FleteOptimoComponent implements OnInit {
       this.openSnackBar('Tienes que seleccionar una zona de influencia.', '⛔', 3000);
     } else {
       const today = new Date();
-      const year = today.getFullYear();
-      const month = ("0" + (today.getMonth() + 1)).slice(-2);
-      const day = ("0" + today.getDate()).slice(-2);
-      const horas = today.getHours();
-      const minutos = today.getMinutes();
-      const segundos = today.getSeconds();
-      const tiempo = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-      const formattedDate = `${year}-${month}-${day}`;
+      const tiempo = moment(today).format('HH:mm:ss');
+      const formattedDate = moment(today).format('YYYY-MM-DD');
       const zonaSeleccionado = this.formGroupFlete.value.zona;
       const sucursalSeleccionado = this.formGroupFlete.value.idSucursal;
       const cantidadFlete = this.formGroupFlete.value.flete !== '' ? this.formGroupFlete.value.flete : 'vacio';
@@ -565,7 +537,6 @@ export class FleteOptimoComponent implements OnInit {
         } else if (this.modo === 'modificar') {
           mensaje = 'Se actualizo de manera exitosa!'
           this.isLoading = true;
-          console.log(estatus);
           const modificar = {
             idFleteOptimo: this.idFleteOptimo,
             idOficina: sucursalSeleccionado.id,
@@ -668,7 +639,6 @@ export class FleteOptimoComponent implements OnInit {
                   this.cargarDatos(mensaje);
                   this.isLoading = false;
                 } catch (error) {
-                  console.log(error);
                 }
               }
             },
@@ -729,12 +699,9 @@ export class FleteOptimoComponent implements OnInit {
           });
           this.circuitosActuales = circuito;
           this._value = rutas;
-          console.log(this.circuitosActuales);
         } else {
           this._value = [];
         }
-        console.log(response.idOficina);
-        console.log(response.nombreOficina);
         this.formGroupFlete.controls['estatus'].setValue(response.estatus === 1 ? true : false);
         const oficina = { id: response.idOficina, nombreOficina: response.nombreOficina.trim() };
         const zona = { id: response.idZona, nombre: response.nombreZona.trim() }
@@ -748,9 +715,7 @@ export class FleteOptimoComponent implements OnInit {
         this.circuitosActuales = [];
         this.formGroupFlete.controls['estatus'].setValue(response.estatus === 1 ? true : false);
         const oficina = { id: response.idOficina, nombreOficina: response.nombreOficina.trim() };
-        console.log(oficina)
         const zona = { id: response.idZona, nombre: response.nombreZona.trim() }
-        console.log(zona)
         this.formGroupFlete.get('zona').setValue(zona);
         this.formGroupFlete.get('idSucursal').setValue(oficina);
         this.formGroupFlete.get('flete').setValue(response.cantidadFleteOptimo);
