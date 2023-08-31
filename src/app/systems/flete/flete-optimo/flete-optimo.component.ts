@@ -105,8 +105,7 @@ export class FleteOptimoComponent implements OnInit {
           this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
           this.router.navigate(['/home/inicio']);
         } else {
-          let mensaje = 'Flete optimo.'
-          this.cargarDatos(mensaje);
+          this.cargarDatos('Flete optimo.');
         }
       } else {
         this.openSnackBar('No tienes permisos para entrar a este modulo', '⛔', 3000);
@@ -245,13 +244,8 @@ export class FleteOptimoComponent implements OnInit {
 
   openDialog(): void {
     const dialogConfig = new MatDialogConfig();
-    if (this.modo == 'agregar') {
-      dialogConfig.width = '460px';
-      this.dialog.open(this.dialogTemplate, dialogConfig);
-    } else {
-      dialogConfig.width = '550px';
-      this.dialog.open(this.dialogTemplate, dialogConfig);
-    }
+    dialogConfig.width = (this.modo === 'agregar') ? '460px' : '550px';
+    this.dialog.open(this.dialogTemplate, dialogConfig);
   }
   /**
     * oncloseDialog: Funcion para limpiar formulario para la busqueda de los talones.
@@ -352,9 +346,8 @@ export class FleteOptimoComponent implements OnInit {
   filtrarDatosSucursal(query: string): any[] {
     let filtered: any[] = [];
     if (query) {
-      const lowercaseQuery = query.toLowerCase();
       filtered = this.sucursales.filter((sucursal) =>
-        sucursal.nombreOficina.toLowerCase().includes(lowercaseQuery)
+        sucursal.nombreOficina.toLowerCase().includes( query.toLowerCase())
       );
     } else {
       filtered = this.sucursales;
@@ -373,13 +366,7 @@ export class FleteOptimoComponent implements OnInit {
 
 
   displayFn(sucursal: any): string {
-    if (sucursal) {
-      this.selectedSatelite = sucursal.idOficina;
-      return sucursal.nombreOficina;
-    } else {
-      return '';
-    }
-
+    return sucursal? (this.selectedSatelite = sucursal.idOficina, sucursal.nombreOficina): '';
   }
 
   /**
