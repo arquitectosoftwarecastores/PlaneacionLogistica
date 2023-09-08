@@ -510,7 +510,6 @@ export class FleteOptimoComponent implements OnInit {
             fechaMod: formattedDate,
             horaMod: formattedDate + 'T' + tiempo
           };
-
           this.fletesService.createFlete(agregar).subscribe(
             (success: any) => {
               this.cargarFletesOptimos();
@@ -586,7 +585,6 @@ export class FleteOptimoComponent implements OnInit {
                       fechaMod: formattedDate,
                       horaMod: tiempo
                     }
-
                     await this.fletesService.updateCircuito(circuito).toPromise();
                   }
                   for (let i = 0; i < this._value.length - this.circuitosActuales.length; i++) {

@@ -193,13 +193,13 @@ export class ConsultaCorteComponent implements OnInit {
           });
       }
       this.inicioFiltro = (date: Date | null): boolean => {
-        if (!date) return false;
-        const today = new Date();
-        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+        const fechaHoy = new Date();
+        const fechaMesAnterior = new Date(fechaHoy.getFullYear(), fechaHoy.getMonth() - 1, fechaHoy.getDate());
+        return date ? (date >= fechaMesAnterior && date <= fechaHoy) : false;
 
-        return date >= lastMonth && date <= today;
       };
       this.FinFiltro = (date: Date | null): boolean => {
+        
         if (!date) return false;
         const today = new Date();
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());

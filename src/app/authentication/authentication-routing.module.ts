@@ -3,8 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 
 export const AuthenticationRoutes: Routes = [
-  { path: '', component: LoginComponent },
-  { path: '**', redirectTo: '' }
+  { path: 'inicioSesion', component: LoginComponent },
+  { path: '**', redirectTo: 'inicioSesion' }
 ];
 
 @NgModule({
