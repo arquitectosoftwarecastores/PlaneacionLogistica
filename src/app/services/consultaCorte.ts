@@ -7,13 +7,14 @@ import { cortesPlaneacion } from '../interfaces/cortes';
 
 import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { DatosTalon } from '../interfaces/datosTalon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
 @Injectable()
 export class consultaCorteService {
 
-  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
+  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router,public snackBar: MatSnackBar) { }
   private detallesTablaList: any[] = [];
 
   setCorte(corte:any){
@@ -21,7 +22,7 @@ export class consultaCorteService {
       .pipe(
         catchError(e => {
           if (e.error.message) {
-            console.error(e.error.message);
+            this.openSnackBar(e.error.message, '⛔');
           }
           return throwError(e);
         }
@@ -48,6 +49,12 @@ export class consultaCorteService {
 
   getDatosTabla(): DatosTalon[] {
     return this.detallesTablaList;
+  }
+
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 3000
+    });
   }
 
 }

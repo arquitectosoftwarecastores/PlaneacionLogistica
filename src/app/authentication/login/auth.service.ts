@@ -8,6 +8,7 @@ import { OficinaActual } from '../../interfaces/oficina-actual';
 import { FormGroup } from '@angular/forms';
 import { AppsettingsComponent } from './../../app-settings/appsettings.component';
 import { catchError} from 'rxjs/operators';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Injectable({
@@ -21,7 +22,7 @@ export class AuthService {
   private _oficinaActual!: OficinaActual;
   private _oficinaActual$: Subject<OficinaActual> = new Subject<OficinaActual>();
 
-  constructor(private http: HttpClient, private AppSettings: AppsettingsComponent) { }
+  constructor(private http: HttpClient, private AppSettings: AppsettingsComponent,public snackBar: MatSnackBar) { }
 
   public get usuario(): Usuario {
     if (this._usuario != null) {
@@ -73,13 +74,19 @@ export class AuthService {
     return this.http.post(this.AppSettings.API_ENDPOINT + `personal/getInfoBySistema/14`,data).pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
     );
   }
 
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 3000
+    });
+
+  }
   guardarUsuario(accesstoken: string, response: any): void {
     const payload = this.obtenerDatosTokenPayload(accesstoken);
 

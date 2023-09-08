@@ -78,11 +78,7 @@ export class InicioComponent implements OnInit{
   logout(): void {
     this.authService.cerrarSesion();
     this.openSnackBar('Sesión cerrada.', '👋', 3000);
-    this.router.navigate(['/login']).then((resolve) => {
-      setTimeout(() => {
-        location.reload();
-      }, 500);
-    });
+    this.router.navigate(['/login/inicioSesion']).then();
   }
   /**
     * openSnackBar: Funcion para ver los mensajes.

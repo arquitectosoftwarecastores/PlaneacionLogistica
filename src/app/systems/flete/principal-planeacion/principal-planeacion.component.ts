@@ -468,12 +468,10 @@ export class PrincipalPlaneacionComponent {
     let fin = new Date(fechaFinal);
     const fechaFinalFormato =  moment(fin).format('YYYY-MM-DD');
     const idCedisInput = this.formGroupFiltro.get('idCedis').value.nombreOficina;
-    console.log(idCedisInput);
     let local = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Local'));
     let agencia = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Agencia'));
     let satelite = +(this.venta.value.some((v: tipoVenta) => v.nombre === 'Satélite'));
     let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
-    console.log(cedisOrigen.idOficina);
     if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
     } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
@@ -527,7 +525,6 @@ export class PrincipalPlaneacionComponent {
         let mensajeConsulta  = (this.mostrarBoton = this.dataSource.data.length > 0) ? '.' : ' pero no se encontraron registros.';
         this.openSnackBar('Se realizo la consulta de manera exitosa' + mensajeConsulta, '✅', 3000);
         this.isLoading = false;
-        console.log(this.dataSource.data)
       }),
       (error: any) => {
         this.mostrarBoton = false;
@@ -938,5 +935,3 @@ export class PrincipalPlaneacionComponent {
     this.dataSource.sort = this.sort;
   }
 }
-
-

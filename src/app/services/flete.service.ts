@@ -9,17 +9,84 @@ import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { tipoVenta } from '../interfaces/tipoVenta';
 import { ubicacionTalon } from '../interfaces/ubicacionTalon';
 import { DatosTalon } from '../interfaces/datosTalon';
+import { ruta } from '../interfaces/ruta';
+import { CircuitoFleteOptimo } from '../interfaces/circuitos';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
 @Injectable()
 export class fletesService {
 
-  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
+  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router,public snackBar: MatSnackBar) { }
 
   getFletesOptimo(){
     return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getAll`);
   }
+  getByFletesOptimo(idFleteOptimo:number){
+    return this.http.get<flete_optimo>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getById/`+idFleteOptimo);
+  }
+
+  getCircuitos(){
+    return this.http.get<ruta[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/getRutasAll`);
+  }
+  getByCircuito(idCircuito:number){
+    return this.http.get<CircuitoFleteOptimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/getByIdFleteOptimo/`+idCircuito);
+  }
+  updateCircuito(circuito:any){
+    return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/update`, circuito)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          this.openSnackBar(e.error.message, '⛔');
+        }
+        return throwError(e);
+      })
+    );
+  }
+  getFletesOptimoOficina(oficina:string){
+    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getByIdOficina/`+oficina);
+  }
+  getFlete(idFlete:string){
+    return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getById/`+idFlete);
+  }
+
+  updateFlete(data:any){
+    return this.http.put(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/update`, data)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          this.openSnackBar(e.error.message, '⛔');
+        }
+        return throwError(e);
+      })
+    );
+  }
+
+  createFlete(flete:any){
+    return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/create`, flete)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          this.openSnackBar(e.error.message, '⛔');
+        }
+        return throwError(e);
+      })
+    );
+  }
+  createCircuito(circuito:any){
+    return this.http.post(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/circuito/create`, circuito)
+    .pipe(
+      catchError(e => {
+        if (e.error.message) {
+          this.openSnackBar(e.error.message, '⛔');
+        }
+        return throwError(e);
+      })
+    );
+  }
+
+
   getTipoVenta():Observable<tipoVenta[]>{
     return this.http.get<tipoVenta[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getTipoVenta`);
   }
@@ -37,5 +104,9 @@ export class fletesService {
     return this.http.post<DatosTalon[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getVirtualAgenciaSatelite/`,datoPrincipal);
   }
 
-
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 3000
+    });
+  }
 }
