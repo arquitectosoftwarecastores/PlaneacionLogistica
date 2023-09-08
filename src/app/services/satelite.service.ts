@@ -7,13 +7,14 @@ import { AppsettingsComponent } from '../app-settings/appsettings.component'
 import { satelite } from '../interfaces/satelite';
 import { sucursales_satelite } from '../interfaces/sucursales_satelite';
 import { cedis } from '../interfaces/oficina';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
 @Injectable()
 export class sateliteService {
 
-  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
+  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router,public snackBar: MatSnackBar) { }
 
   getSucursalSatelite(oficina: number):Observable<any>{
     return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getByIdOficinaSatelite/${oficina}`);
@@ -28,7 +29,7 @@ export class sateliteService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -39,7 +40,7 @@ export class sateliteService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -49,6 +50,10 @@ export class sateliteService {
     return this.http.get<cedis[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getOficinasFaltantes`);
   }
 
-
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 3000
+    });
+  }
 
 }

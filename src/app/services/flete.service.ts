@@ -11,13 +11,14 @@ import { ubicacionTalon } from '../interfaces/ubicacionTalon';
 import { DatosTalon } from '../interfaces/datosTalon';
 import { ruta } from '../interfaces/ruta';
 import { CircuitoFleteOptimo } from '../interfaces/circuitos';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
 @Injectable()
 export class fletesService {
 
-  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router) { }
+  constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router,public snackBar: MatSnackBar) { }
 
   getFletesOptimo(){
     return this.http.get<flete_optimo[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/flete/optimo/getAll`);
@@ -37,7 +38,7 @@ export class fletesService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -55,7 +56,7 @@ export class fletesService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -67,7 +68,7 @@ export class fletesService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -78,7 +79,7 @@ export class fletesService {
     .pipe(
       catchError(e => {
         if (e.error.message) {
-          console.error(e.error.message);
+          this.openSnackBar(e.error.message, '⛔');
         }
         return throwError(e);
       })
@@ -103,5 +104,9 @@ export class fletesService {
     return this.http.post<DatosTalon[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/principal/getVirtualAgenciaSatelite/`,datoPrincipal);
   }
 
-
+  openSnackBar(message: string, action: string) {
+    this.snackBar.open(message, action, {
+      duration: 3000
+    });
+  }
 }
