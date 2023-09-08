@@ -12,6 +12,6 @@
 - __Autor:__ Oswaldo Ramirez
 - __Fecha:__ 16/08/2023
 - __Descripción:__
- - Se Agregan nuevos modulos Planeacion principal y Consulta corte.
+  - Se Agregan nuevos modulos Planeacion principal y Consulta corte.
  
 
