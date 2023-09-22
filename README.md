@@ -1,12 +1,12 @@
 # PlaneacionLogisticaPaqueteria
 
-## Versión: 1.0.2.0
+## Versión: 1.0.2.1
 
 - __Ticket/Proyecto:__ Planeacion Logistica
 - __Autor:__ Oswaldo Ramirez
-- __Fecha:__ 22/08/2023
+- __Fecha:__ 22/09/2023
 - __Descripción:__
-  - Se crea nuevo modulo flete optimo
+  - Se modifica filtros del modulo de planeacion principal.
 
 --------
 # Configuración técnica

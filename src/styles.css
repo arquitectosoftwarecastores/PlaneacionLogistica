@@ -665,6 +665,12 @@ label:focus,
   margin-top: 30px;
 }
 
+.planeacionPrincipal{
+  width: 97%;
+  margin-left: 20px;
+  margin-top: 30px;
+}
+
 .mat-mdc-form-field {
   width: 320px;
   min-width: 120px;
@@ -1040,7 +1046,8 @@ span {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* Asegúrate de un valor alto de z-index */
+  z-index: 9999;
+  /* Asegúrate de un valor alto de z-index */
 }
 
 .sucursal::placeholder {
@@ -1061,34 +1068,32 @@ span {
 
 .select2-container--default .select2-selection--multiple {
   height: 120px;
-  max-height: 300px; /* Ajusta esta altura según tus necesidades */
+  max-height: 300px;
   overflow-y: auto;
 }
 
-/* Estilo de los elementos seleccionados */
 .select2-container--default .select2-selection__choice {
   padding: 2px 6px;
   background-color: #f0f0f0;
   margin-right: 5px;
 }
 
-/* Cambiar el color de fondo cuando se pasa el mouse sobre los elementos seleccionados */
 .select2-container--default .select2-selection__choice:hover {
   background-color: #e0e0e0;
 }
 
-#circuitos{
+#circuitos {
   display: block;
   padding: 3px;
   height: 135px;
 }
 
 
-.select2-container{
+.select2-container {
   width: 100% !important;
 }
 
-.select2-container--default .select2-results > .select2-results__options {
+.select2-container--default .select2-results>.select2-results__options {
   max-height: 200px;
   overflow-y: auto;
   background: white;
