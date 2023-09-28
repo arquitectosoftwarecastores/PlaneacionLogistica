@@ -104,7 +104,7 @@
     <table mat-table class="table table-striped" [dataSource]="dataSource" matSort #tablaPlaneacionSort="matSort">
       <ng-container matColumnDef="index">
         <th mat-header-cell *matHeaderCellDef> </th>
-        <td mat-cell *matCellDef="let element; let i = index;">{{i+1}}</td>
+        <td mat-cell *matCellDef="let element; let i = index;">{{ currentIndex + i + 1 }}</td>
         <td id="mat-footer-sumatoria" mat-footer-cell *matFooterCellDef></td>
       </ng-container>
       <ng-container matColumnDef="claTalon">
@@ -306,7 +306,7 @@
       <mat-spinner color="primary"></mat-spinner>
     </div>
     <br>
-    <mat-paginator #paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users">
+    <mat-paginator #paginator [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPageChange($event)" aria-label="Select page of users">
     </mat-paginator>
   </section>
 </div>

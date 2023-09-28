@@ -1,6 +1,6 @@
 
 import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl} from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl, PageEvent} from '@angular/material/paginator';
 import { MatSort} from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog} from '@angular/material/dialog';
@@ -973,4 +973,9 @@ export class PrincipalPlaneacionComponent {
       return uniqueValues;
     }, [] as string[]));
   }
+  currentIndex: number = 0;
+  onPageChange(event: PageEvent): void {
+    this.currentIndex = event.pageIndex * event.pageSize;
+  }
+
 }
