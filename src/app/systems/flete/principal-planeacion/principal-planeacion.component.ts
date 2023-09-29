@@ -1,6 +1,6 @@
 
 import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl} from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl, PageEvent} from '@angular/material/paginator';
 import { MatSort} from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog} from '@angular/material/dialog';
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
 import { cedis } from 'src/app/interfaces/oficina';
 import { oficinasService } from 'src/app/services/oficinas.service';
 import { CustomPaginator } from 'src/app/shared/paginator/custompaginator';
-import { forkJoin } from 'rxjs';
+import { Observable, forkJoin, map, startWith } from 'rxjs';
 import { zonasInfluencia } from 'src/app/interfaces/zonasInfluencia';
 import { tipoVenta } from 'src/app/interfaces/tipoVenta';
 import { fletesService } from 'src/app/services/flete.service';
@@ -45,7 +45,7 @@ export class PrincipalPlaneacionComponent {
 
 
   columnasMostradas: string[] = ['index', 'claTalon', 'tipoTalon', 'flete', 'cdp', 'bulto', 'volumen', 'queContiene', 'documenta', 'origen', 'tipo', 'venta',
-    'destino', 'tipoGuia', 'noEconomico'];
+    'destino', 'tipoGuia', 'noEconomico','fecha','hora'];
   displayedColumns: string[] = this.columnasMostradas;
   venta = new FormControl();
   tipo = new FormControl();
@@ -68,6 +68,8 @@ export class PrincipalPlaneacionComponent {
   destinoFiltro = new FormControl();
   tipoGuiaFiltro = new FormControl();
   noEconomicoFiltro = new FormControl();
+  fechaFiltro = new FormControl();
+  horaFiltro = new FormControl();
 
   filteredSucursales: any[] = [];
   filteredZonas: any[] = [];
@@ -884,6 +886,8 @@ export class PrincipalPlaneacionComponent {
       destino: this.destinoFiltro.value,
       tipoGuia: this.tipoGuiaFiltro.value,
       noEconomico: this.noEconomicoFiltro.value,
+      fecha: this.fechaFiltro.value,
+      hora: this.horaFiltro.value
     };
 
     this.dataSource.filterPredicate = (data: DatosTalon, filter: string) => {
@@ -904,7 +908,10 @@ export class PrincipalPlaneacionComponent {
       const destinoMatch = data.destino?.toLowerCase().includes(filtersObj.destino?.toLowerCase() || '');
       const tipoGuiaMatch = data.tipoGuia?.toLowerCase().includes(filtersObj.tipoGuia?.toLowerCase() || '');
       const noEconomicoMatch = data.noEconomico?.toString().toLowerCase().includes(filtersObj.noEconomico?.toLowerCase() || '');
-      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && contieneMatch && documentaMatch && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch;
+      const fechaMatch = data.fecha?.toString().toLowerCase().includes(filtersObj.fecha?.toLowerCase() || '');
+      const horaMatch = data.hora?.toString().toLowerCase().includes(filtersObj.hora?.toLowerCase() || '');
+      return claTalonMatch && tipoTalonMatch && fleteMatch && cdpMatch && bultoMatch && volumenMatch && contieneMatch && documentaMatch
+              && origenMatch && tipoMatch && ventaMatch && destinoMatch && tipoGuiaMatch && noEconomicoMatch && fechaMatch && horaMatch;
     };
     this.dataSource.filter = JSON.stringify(filters);
   }
@@ -932,6 +939,43 @@ export class PrincipalPlaneacionComponent {
     this.formGroupFiltro.get('idCedis')?.setValue(null);
     this.formGroupFiltro.get('zona')?.setValue(null);
     this.dataSource = new MatTableDataSource<DatosTalon>();
+    this.numeroTalonFiltro.setValue('');
+    this.tipoTalonFiltro.setValue('');
+    this.fleteFiltro.setValue('');
+    this.cdpFiltro.setValue('');
+    this.bultosFiltro.setValue('');
+    this.valumenFiltro.setValue('');
+    this.contieneFiltro.setValue('');
+    this.origenFiltro.setValue('');
+    this.DocumentaFiltro.setValue('');
+    this.tipoFiltro.setValue('');
+    this.ventaFiltro.setValue('');
+    this.destinoFiltro.setValue('');
+    this.tipoGuiaFiltro.setValue('');
+    this.noEconomicoFiltro.setValue('');
+    this.fechaFiltro.setValue('');
+    this.horaFiltro.setValue('');
     this.dataSource.sort = this.sort;
   }
+/**
+    * filtrarColumna: Funcion para filtrar cualquier columna dependiendo del select donde este.
+    *
+    * @param fecha (string)
+    * @return Date
+    * @author Oswaldo Ramirez [desarrolloti43]
+    * @date 2023-09-21
+   */
+  filtrarColumna(columnaActual:string) :any[] {
+    return Array.from(this.dataSource.data.reduce((uniqueValues, row) => {
+      if (!uniqueValues.includes(row[columnaActual])) {
+        uniqueValues.push(row[columnaActual]);
+      }
+      return uniqueValues;
+    }, [] as string[]));
+  }
+  currentIndex: number = 0;
+  onPageChange(event: PageEvent): void {
+    this.currentIndex = event.pageIndex * event.pageSize;
+  }
+
 }
