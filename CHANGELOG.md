@@ -1,18 +1,20 @@
 # Planeacion Logistica
-## Versión: 1.0.2.1
+## Versión: 1.0.3.1
 
 - __Ticket/Proyecto:__ Planeacion Logistica
 - __Autor:__ Oswaldo Ramirez
 - __Fecha:__ 28/09/2023
 - __Descripción:__
   - Se reselve bug del filtro del modulo planeacion principal.
-## Versión: 1.0.2.1
+
+## Versión: 1.0.3.0
 
 - __Ticket/Proyecto:__ Planeacion Logistica
 - __Autor:__ Oswaldo Ramirez
 - __Fecha:__ 22/09/2023
 - __Descripción:__
   - Se modifica filtros del modulo de planeacion principal.
+  
 ## Versión: 1.0.2.0
 
 - __Ticket/Proyecto:__ Planeacion Logistica
