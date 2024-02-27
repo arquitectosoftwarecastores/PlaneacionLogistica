@@ -151,7 +151,7 @@ export class PrincipalPlaneacionComponent {
     this.dateFilter = (date: Date | null): boolean => {
       const today = new Date();
       const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 2);
+      yesterday.setDate(today.getDate() - 7);
       // Permite las fechas dentro del rango entre ayer y hoy
       return date! >= yesterday && date! <= today;
     }
@@ -520,7 +520,9 @@ export class PrincipalPlaneacionComponent {
         tablaList1 = new MatTableDataSource<DatosTalon>(piso as DatosTalon[]);
         tablaList2 = new MatTableDataSource<DatosTalon>(local as DatosTalon[]);
         tablaList3 = new MatTableDataSource<DatosTalon>(virtual as DatosTalon[]);
-        this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+        const orderData = [...tablaList1.data, ...tablaList2.data, ...tablaList3.data];
+        orderData.sort((a, b) => b.flete - a.flete);
+        this.dataSource = new MatTableDataSource(orderData);
         this.dataSource.paginator = this.paginator;
         this.paginator.pageSize = 5;
         this.dataSource.sort = this.tablaPlaneacionSort;
@@ -556,7 +558,9 @@ export class PrincipalPlaneacionComponent {
               this.fleteService.getVirtualAgenciaSatelite(datosConsulta)]).subscribe(([piso, virtual]) => {
                 tablaList1 = new MatTableDataSource<DatosTalon>(piso as DatosTalon[]);
                 tablaList3 = new MatTableDataSource<DatosTalon>(virtual as DatosTalon[]);
-                this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+                const orderData = [...tablaList1.data, ...tablaList2.data, ...tablaList3.data];
+                orderData.sort((a, b) => b.flete - a.flete);
+                this.dataSource = new MatTableDataSource(orderData);
                 this.dataSource.paginator = this.paginator;
                 this.paginator.pageSize = 5;
                 this.dataSource.sort = this.tablaPlaneacionSort;
@@ -579,7 +583,9 @@ export class PrincipalPlaneacionComponent {
             this.fleteService.getPisoAgenciaSatelite(datosConsulta).subscribe(
               (success: any) => {
                 tablaList1 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
-                this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+                const orderData = [...tablaList1.data, ...tablaList2.data, ...tablaList3.data];
+                orderData.sort((a, b) => b.flete - a.flete);
+                this.dataSource = new MatTableDataSource(orderData);
                 this.dataSource.paginator = this.paginator;
                 this.paginator.pageSize = 5;
                 this.dataSource.sort = this.tablaPlaneacionSort;
@@ -610,7 +616,9 @@ export class PrincipalPlaneacionComponent {
           this.fleteService.getPisoLocal(datosConsulta).subscribe(
             (success: any) => {
               tablaList2 = new MatTableDataSource<DatosTalon>(success as DatosTalon[]);
-              this.dataSource = new MatTableDataSource([...tablaList1.data, ...tablaList2.data, ...tablaList3.data]);
+              const orderData = [...tablaList1.data, ...tablaList2.data, ...tablaList3.data];
+              orderData.sort((a, b) => b.flete - a.flete);
+              this.dataSource = new MatTableDataSource(orderData);
               this.dataSource.paginator = this.paginator;
               this.paginator.pageSize = 5;
               this.dataSource.sort = this.tablaPlaneacionSort;

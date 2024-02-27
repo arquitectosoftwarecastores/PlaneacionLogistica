@@ -16,8 +16,8 @@ export class sateliteService {
 
   constructor(private appsettings: AppsettingsComponent, private http: HttpClient, private router: Router,public snackBar: MatSnackBar) { }
 
-  getSucursalSatelite(oficina: number):Observable<any>{
-    return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getByIdOficinaSatelite/${oficina}`);
+  getSucursalSatelite(sucursal: number, oficina: number):Observable<any>{
+    return this.http.get<sucursales_satelite[]>(this.appsettings.API_ENDPOINT + `planeacion/logistica/sucursal/satelite/getByIdOficinaSatelite/${oficina}?sucursal=${sucursal}`);
   }
 
   getAllSatelite():Observable<any>{
