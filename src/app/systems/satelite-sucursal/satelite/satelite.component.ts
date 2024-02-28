@@ -293,7 +293,7 @@ export class SateliteComponent implements OnInit {
           this.cargarDatos();
         },
         (error: any) => {
-          this.openSnackBar('Hubo un error al guardar', '⛔', 3000);
+          this.openSnackBar('Hubo un error al guardar, registro duplicado', '⛔', 3000);
         });
     } else if (this.modo === 'modificar') {
       this.modificar = {
@@ -361,7 +361,7 @@ export class SateliteComponent implements OnInit {
     * @author Oswaldo Ramirez [desarrolloti43]
     * @date 2023-07-10
    */
-  abrirModalModificar(idSatelite: number) {
+  abrirModalModificar(idSucursal: number,idSatelite: number) {
     this.modo = 'modificar';
     this.formGroupSatelite.get('idSucursal').setValue('');
     this.idOficinaSatelite = idSatelite;
@@ -370,7 +370,7 @@ export class SateliteComponent implements OnInit {
     this.isDisabled=false;
     this.isDivBlocked=false
     this.isLoading=true;
-    this.sateliteService.getSucursalSatelite(this.idOficinaSatelite).subscribe(response => {
+    this.sateliteService.getSucursalSatelite(idSucursal, this.idOficinaSatelite).subscribe(response => {
       this.inputValue = response.idOficinaSatelite;
       this.placeholderText = response.nombreSatelite;
       this.defaultSatelite = response.idOficinaPertenece;
