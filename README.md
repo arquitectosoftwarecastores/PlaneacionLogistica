@@ -13,9 +13,13 @@
 
 --------
 # Configuración técnica
-- __IDE:__ Visual Studio Code
-- __Lenguaje:__ TypeScript
-- __Framework:__ Angular
+| Característica          | Recurso utilizado |
+| :---------------------- | :---------------- |
+| IDE                     | VSCode            |
+| Lenguaje                | TypeScript        |
+| Framework               | Angular 16.1.4    |
+| Entorno ejecución       | Node 16.14.2      | 
+| Gestor de paquetes      | npm 8.5.0         |
 
 ## Librerías
 ### Internas
