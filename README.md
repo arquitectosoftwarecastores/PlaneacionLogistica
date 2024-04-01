@@ -1,15 +1,11 @@
 # PlaneacionLogisticaPaqueteria
 
-## Versión: 1.0.4.0
-
+## Versión: 1.0.5.0
 - __Ticket/Proyecto:__ Planeacion Logistica
-- __Autor:__ Erick Lopez
-- __Fecha:__ 27/02/2024
+- __Autor:__ Eduardo Navarro Carranza
+- __Fecha:__ 01/04/2024
 - __Descripción:__
-  - Se extendieron la cantidad de días que se pueden consulta para conocer el inventario en piso y virtual.
-  - Eliminación de la opción local para conocer el contenido en cedis.
-  - Eliminación de restricciones para asignar un satélite a más de una sucursal.
-  - Modificación de métodos de actualización por la eliminación de la restricción anterior.
+  - Se modifican las validaciones del filtro de busqueda en el modulo de Planeacion Principal para evitar que se consulte si falta especificar alguna opcion del filtro.
 
 --------
 # Configuración técnica
