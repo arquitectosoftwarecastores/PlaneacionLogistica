@@ -476,15 +476,15 @@ export class PrincipalPlaneacionComponent {
     let oficina = this.obtenerIdOficina() === '1100' ? cedisOrigen.idOficina : this.obtenerIdOficina();
     if (this.obtenerIdOficina().includes('1100') && cedisOrigen.idOficina == null) {
       this.openSnackBar('Debes de seleccionar una oficina', '⛔', 3000);
-    } else if (fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
+    } else if (this.formGroupFiltro.get('fechaInicio').value == ' ' || fechaIniciaFormato == null || fechaIniciaFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha de inicio', '⛔', 3000);
-    } else if (fechaFinalFormato == null || fechaFinalFormato == 'NaN-NaN-NaN') {
+    } else if (this.formGroupFiltro.get('fechaFin').value == ' ' || fechaFinalFormato == null || fechaFinalFormato == 'NaN-NaN-NaN') {
       this.openSnackBar('Debes de seleccionar una fecha final', '⛔', 3000);
     } else if (fechaIniciaFormato > fechaFinalFormato) {
       this.openSnackBar('La fecha inicio no puede ser mayor a fecha fin', '⛔', 3000);
-    } else if (this.venta.value == null) {
+    } else if (this.venta.value == '' || this.venta.value == null) {
       this.openSnackBar('Debes de seleccionar minimo un tipo venta', '⛔', 3000);
-    } else if (this.tipo.value == null) {
+    } else if (this.tipo.value == '' || this.tipo.value == null) {
       this.openSnackBar('Debes de seleccionar el tipo de la ubicacion del talon', '⛔', 3000);
     } else if (this.tipo.value.length == 2 && this.venta.value.length == 3) {
       this.isLoading = true;
