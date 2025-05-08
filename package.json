@@ -2,11 +2,7 @@
   "name": "planeacion-logistica-paqueteria",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "buildProductionGlass": "ng build --configuration production --aot --output-hashing=all --base-href /PlaneacionLogistica/"
   },
   "private": true,
   "dependencies": {
