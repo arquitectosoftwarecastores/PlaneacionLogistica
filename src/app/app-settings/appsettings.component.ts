@@ -3,6 +3,6 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class AppsettingsComponent {
-  API_ENDPOINT = 'https://back.castores.com.mx:443/castores/services/';
-  ENDPOINT = 'https://back.castores.com.mx:443/';
+  API_ENDPOINT = 'https://back.castores.com.mx/castores/services/';
+  ENDPOINT = 'https://back.castores.com.mx/';
 }
