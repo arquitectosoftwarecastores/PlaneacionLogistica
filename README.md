@@ -1,11 +1,11 @@
 # PlaneacionLogisticaPaqueteria
 
-## Versión: 1.0.5.0
+## Versión: 1.0.5.1
 - __Ticket/Proyecto:__ Planeacion Logistica
-- __Autor:__ Eduardo Navarro Carranza
-- __Fecha:__ 01/04/2024
+- __Autor:__ Maribel Pérez López
+- __Fecha:__ 05/05/2025
 - __Descripción:__
-  - Se modifican las validaciones del filtro de busqueda en el modulo de Planeacion Principal para evitar que se consulte si falta especificar alguna opcion del filtro.
+  - Se cambian rutas a https.
 
 --------
 # Configuración técnica

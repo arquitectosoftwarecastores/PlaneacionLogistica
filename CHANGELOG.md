@@ -1,5 +1,12 @@
 # Planeacion Logistica
 
+## Versión: 1.0.5.1
+- __Ticket/Proyecto:__ Planeacion Logistica
+- __Autor:__ Maribel Pérez López
+- __Fecha:__ 05/05/2025
+- __Descripción:__
+  - Se cambian rutas a https.
+
 ## Versión: 1.0.5.0
 - __Ticket/Proyecto:__ Planeacion Logistica
 - __Autor:__ Eduardo Navarro Carranza
