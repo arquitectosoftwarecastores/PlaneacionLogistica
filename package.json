@@ -23,7 +23,6 @@
     "jquery": "^3.7.0",
     "moment": "^2.29.4",
     "ng-select2": "^1.4.1",
-    "planeacion-logistica-paqueteria": "file:",
     "primeng": "^16.0.2",
     "rxjs": "~7.8.0",
     "select2": "^4.1.0-rc.0",
