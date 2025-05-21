@@ -1,11 +1,11 @@
 # PlaneacionLogisticaPaqueteria
 
-## Versión: 1.0.5.1
-- __Ticket/Proyecto:__ Planeacion Logistica
-- __Autor:__ Maribel Pérez López
-- __Fecha:__ 05/05/2025
+## Versión: 1.0.6.0
+- __Ticket/Proyecto:__ 214451
+- __Autor:__ Alejandra Aguilera
+- __Fecha:__ 21/05/2025
 - __Descripción:__
-  - Se cambian rutas a https.
+  - Se agrega botón de descarga de Excel de las búsquedas filtradas.
 
 --------
 # Configuración técnica

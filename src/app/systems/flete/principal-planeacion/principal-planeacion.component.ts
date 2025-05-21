@@ -19,6 +19,9 @@ import { ubicacionTalon } from 'src/app/interfaces/ubicacionTalon';
 import { DatosTalon } from 'src/app/interfaces/datosTalon';
 import { consultaCorteService } from 'src/app/services/consultaCorte';
 import * as moment from 'moment';
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
+
 
 @Component({
   selector: 'app-principal-planeacion',
@@ -984,6 +987,39 @@ export class PrincipalPlaneacionComponent {
   currentIndex: number = 0;
   onPageChange(event: PageEvent): void {
     this.currentIndex = event.pageIndex * event.pageSize;
+  }
+
+  descargaExcel(): void {
+    if (!this.dataSource.data || this.dataSource.data.length === 0) {
+      this.openSnackBar('No hay datos para exportar.', '⛔', 3000);
+      return;
+    }
+
+    const datosExportar = this.dataSource.data.map(row => ({
+      'Talón': row.claTalon,
+      'Tipo Talón': row.tipoTalon,
+      'Flete': row.flete,
+      'CDP': row.cdp,
+      'Bulto': row.bulto,
+      'Volumen': row.volumen,
+      'Contenido': row.queContiene,
+      'Documenta': row.nombreOficinaDocumenta,
+      'Origen': row.origen,
+      'Tipo': row.tipo,
+      'Venta': row.venta,
+      'Destino': row.destino,
+      'Tipo Guía': row.tipoGuia,
+      'Unidad': row.noEconomico,
+      'Fecha': row.fecha,
+      'Hora': row.hora
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(datosExportar);
+    const wb: XLSX.WorkBook = { Sheets: { 'Datos': ws }, SheetNames: ['Datos'] };
+
+    const excelBuffer: any = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    FileSaver.saveAs(blob, 'planeacion.xlsx');
   }
 
 }
